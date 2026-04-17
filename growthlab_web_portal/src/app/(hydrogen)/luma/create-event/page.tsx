@@ -1,723 +1,478 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  PiArrowRight,
+  PiSparkle,
   PiCalendarDots,
+  PiCalendar,
+  PiCompass,
+  PiMagnifyingGlass,
+  PiBell,
+  PiImageSquare,
+  PiArrowRight,
   PiCaretDown,
   PiClock,
-  PiCopySimple,
-  PiDeviceMobile,
-  PiEnvelopeSimple,
-  PiFingerprint,
-  PiFileText,
-  PiGlobe,
-  PiGlobeHemisphereEast,
-  PiImageSquare,
-  PiLinkSimple,
   PiMapPin,
-  PiShieldCheck,
-  PiSlidersHorizontal,
+  PiFileText,
   PiTicket,
-  PiUploadSimple,
+  PiShieldCheck,
   PiUsers,
-  PiX,
-  PiGoogleLogo,
+  PiShuffle,
 } from 'react-icons/pi';
 import { routes } from '@/config/routes';
+import Image from 'next/image';
 
-const bg = 'linear-gradient(135deg, #0e7678 0%, #1a9a9c 30%, #c8ecec 65%, #ffffff 100%)';
-const teal = '#0e7678';
-const tealAccent = '#1a9a9c';
-const tealSoft = '#5a9a9b';
-const dark = '#0a3535';
-const muted = '#2d6b6c';
+const colors = {
+  bg: '#f8fdfd',
+  headerText: '#5c6c6c',
+  headerIcon: '#8fa0a0',
+  textMain: '#2d3a3a',
+  textMuted: '#6d7f7f',
+  accent: '#1ba3a3',
+  button: '#067d7d',
+  cardBg: '#ffffff',
+  inputBg: '#eef7f7',
+  border: '#e0ecec',
+};
 
 export default function LumaCreateEventPage() {
-  const [showAuth, setShowAuth] = useState(false);
   const router = useRouter();
-
-  const authButtons = [
-    { icon: <PiGoogleLogo size={18} color={tealSoft} />, label: 'Sign in with Google' },
-    { icon: <PiFingerprint size={18} color={tealSoft} />, label: 'Sign in with Passkey' },
-    { icon: <PiDeviceMobile size={18} color={tealSoft} />, label: 'Use phone number' },
-  ];
-
-  const optionRows = [
-    { label: 'Ticket Price', value: 'Free', icon: <PiTicket size={16} color={teal} /> },
-    { label: 'Require Approval', value: 'Off', icon: <PiShieldCheck size={16} color={teal} /> },
-    { label: 'Capacity', value: 'Unlimited', icon: <PiUsers size={16} color={teal} /> },
-  ];
+  const [eventName, setEventName] = useState('');
 
   return (
-    <main style={{ minHeight: '100vh', background: bg, fontFamily: 'inherit', color: dark }}>
+    <main
+      style={{
+        minHeight: '100vh',
+        background: colors.bg,
+        color: colors.textMain,
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }}
+    >
       <style>{`
-        * { box-sizing: border-box; }
-        input, textarea, button { font-family: inherit; }
-        .date-box:hover, .option-row:hover, .input-box:focus-within {
-          border-color: ${teal} !important;
-          box-shadow: 0 0 0 3px rgba(14,118,120,0.1) !important;
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+        
+        body { font-family: 'Outfit', sans-serif; }
+        
+        .nav-link { 
+          display: flex; 
+          align-items: center; 
+          gap: 6px; 
+          color: ${colors.headerText}; 
+          text-decoration: none; 
+          font-size: 14px; 
+          font-weight: 500;
+          transition: opacity 0.2s;
         }
-        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(14,118,120,0.42) !important; }
-        .submit-btn:active { transform: translateY(0); }
-        .create-btn:hover { background: rgba(255,255,255,0.25) !important; }
+        .nav-link:hover { opacity: 0.7; }
+        
+        .icon-btn {
+          background: none;
+          border: none;
+          color: ${colors.headerIcon};
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px;
+        }
+        
+        .input-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 14px;
+          background: ${colors.inputBg};
+          border-radius: 12px;
+          border: 1px solid transparent;
+          transition: border-color 0.2s;
+        }
+        .input-row:focus-within {
+          border-color: ${colors.accent}44;
+        }
+        
+        .option-toggle {
+          width: 44px;
+          height: 24px;
+          background: #e0ecec;
+          border-radius: 12px;
+          position: relative;
+          cursor: pointer;
+        }
+        .option-toggle::after {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          width: 20px;
+          height: 20px;
+          background: white;
+          border-radius: 50%;
+          transition: transform 0.2s;
+        }
+        .option-toggle.active { background: ${colors.accent}; }
+        .option-toggle.active::after { transform: translateX(20px); }
+
+        .time-dropdown {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          width: 80px;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+          border: 1px solid ${colors.border};
+          z-index: 10;
+          margin-top: 4px;
+          max-height: 200px;
+          overflow-y: auto;
+        }
+        .time-item {
+          padding: 8px 12px;
+          font-size: 13px;
+          cursor: pointer;
+          border-bottom: 1px solid ${colors.border};
+        }
+        .time-item:last-child { border: none; }
+        .time-item:hover { background: ${colors.inputBg}; }
+        .time-item.selected { background: ${colors.button}; color: white; }
       `}</style>
 
+      {/* Header */}
       <header
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '16px 32px',
-          maxWidth: '1080px',
+          padding: '12px 24px',
+          maxWidth: '1200px',
           margin: '0 auto',
-          gap: '16px',
-          flexWrap: 'wrap',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>
-            luma<span style={{ opacity: 0.6 }}>*</span>
-          </span>
-          <nav style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-            <Link href={routes.luma.events} style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontWeight: 600, fontSize: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+          <PiSparkle size={20} color={colors.headerIcon} style={{ cursor: 'pointer' }} />
+          <nav style={{ display: 'flex', gap: '20px' }}>
+            <Link href="#" className="nav-link">
+              <PiCalendarDots size={18} />
               Events
             </Link>
-            <Link href={routes.eventCalendar} style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontWeight: 600, fontSize: '14px' }}>
+            <Link href="#" className="nav-link">
+              <PiCalendar size={18} />
               Calendars
             </Link>
-            <Link href={routes.discover} style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontWeight: 600, fontSize: '14px' }}>
+            <Link href="#" className="nav-link">
+              <PiCompass size={18} />
               Discover
             </Link>
           </nav>
         </div>
-        <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>4:19 PM GMT+5:30</span>
-          <button
-            onClick={() => setShowAuth(true)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255,255,255,0.9)',
-              fontFamily: 'inherit',
-              fontWeight: 700,
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            Sign In
-          </button>
-          <button
-            className="create-btn"
-            style={{
-              padding: '9px 16px',
-              borderRadius: '10px',
-              border: '1.5px solid rgba(255,255,255,0.45)',
-              background: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(6px)',
-              color: '#fff',
-              fontFamily: 'inherit',
-              fontWeight: 700,
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{ fontSize: '13px', color: '#8fa0a0', fontWeight: 500 }}>
+            18:44 GMT+5:30
+          </span>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: colors.textMain }}>
             Create Event
-            <PiArrowRight size={14} />
+          </span>
+          <button className="icon-btn"><PiMagnifyingGlass size={20} /></button>
+          <button className="icon-btn" style={{ position: 'relative' }}>
+            <PiBell size={20} />
+            <div style={{ position: 'absolute', top: 4, right: 4, width: 6, height: 6, background: '#ff5c5c', borderRadius: '50%' }} />
           </button>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              background: '#e67300',
+              color: 'white',
+              fontSize: '12px',
+              display: 'grid',
+              placeItems: 'center',
+              fontWeight: 700,
+            }}
+          >
+            Y
+          </div>
         </div>
       </header>
 
-      <section
+      {/* Main Content */}
+      <div
         style={{
           maxWidth: '1080px',
           margin: '0 auto',
-          padding: '20px 32px 80px',
+          padding: '40px 24px',
           display: 'grid',
-          gridTemplateColumns: '0.42fr 0.58fr',
-          gap: '24px',
-          alignItems: 'start',
+          gridTemplateColumns: 'minmax(340px, 400px) 1fr',
+          gap: '40px',
         }}
       >
-        <div style={{ display: 'grid', gap: '16px' }}>
+        {/* Left Column: Media */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div
             style={{
-              height: '340px',
-              borderRadius: '20px',
-              background: 'linear-gradient(145deg, #0e7678, #1fb8ba, #7ddada, #ffffff)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
+              width: '100%',
+              aspectRatio: '1',
+              borderRadius: '24px',
+              background: '#f0f5f5',
               overflow: 'hidden',
-              boxShadow: '0 20px 48px rgba(14,118,120,0.32)',
+              position: 'relative',
+              boxShadow: '0 8px 30px rgba(0,80,80,0.06)',
             }}
           >
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'radial-gradient(circle at 70% 30%, rgba(255,255,255,0.28) 0%, transparent 60%)',
-              }}
+            <Image
+                src="/growthlab/startup-team-collaboration.png"
+                alt="Event cover"
+                fill
+                className="object-cover"
+                priority
             />
-            <div
-              style={{
-                width: '82%',
-                height: '82%',
-                borderRadius: '14px',
-                border: '1.5px dashed rgba(255,255,255,0.45)',
-                display: 'grid',
-                placeItems: 'center',
-                color: 'rgba(255,255,255,0.8)',
-              }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                <PiImageSquare size={48} />
-                <span style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Upload Cover
-                </span>
-              </div>
-            </div>
+            {/* Overlay Shuffle */}
             <button
-              type="button"
-              aria-label="Upload cover image"
               style={{
                 position: 'absolute',
-                bottom: '14px',
-                right: '14px',
-                width: 38,
-                height: 38,
+                bottom: '16px',
+                right: '16px',
+                width: 36,
+                height: 36,
                 borderRadius: '50%',
-                background: 'rgba(0,0,0,0.4)',
-                backdropFilter: 'blur(6px)',
+                background: 'rgba(0,0,0,0.8)',
+                color: 'white',
                 border: 'none',
                 display: 'grid',
                 placeItems: 'center',
                 cursor: 'pointer',
-                color: 'white',
+                backdropFilter: 'blur(4px)',
               }}
             >
-              <PiUploadSimple size={16} />
+              <PiShuffle size={18} />
             </button>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              borderRadius: '14px',
-              background: 'rgba(255,255,255,0.72)',
-              border: '1px solid rgba(14,118,120,0.18)',
-              backdropFilter: 'blur(8px)',
-              fontWeight: 700,
-              color: dark,
-              fontSize: '14px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: 28, height: 20, borderRadius: '6px', background: 'linear-gradient(90deg, #0e7678, #7ddada)' }} />
-              <span>Theme</span>
-            </div>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              Ocean Teal
-              <PiCaretDown size={12} color={tealSoft} />
-            </span>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '10px 14px',
-              borderRadius: '12px',
-              background: 'rgba(255,255,255,0.72)',
-              border: '1px solid rgba(14,118,120,0.18)',
-              backdropFilter: 'blur(8px)',
-            }}
-          >
-            <PiLinkSimple size={15} color={tealSoft} />
-            <input
-              placeholder="Paste image URL..."
-              style={{
-                flex: 1,
-                border: 'none',
-                background: 'transparent',
-                fontFamily: 'inherit',
-                fontSize: '13px',
-                color: '#2d6b6c',
-                outline: 'none',
-              }}
-            />
-            <button
-              type="button"
-              aria-label="Copy image URL"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: tealSoft, display: 'grid', placeItems: 'center' }}
-            >
-              <PiCopySimple size={15} />
-            </button>
-          </div>
-        </div>
-
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            router.push(routes.luma.eventDetail);
-          }}
-          style={{
-            background: 'rgba(255,255,255,0.88)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(14,118,120,0.14)',
-            borderRadius: '20px',
-            padding: '22px',
-            display: 'grid',
-            gap: '16px',
-            boxShadow: '0 20px 48px rgba(14,118,120,0.14)',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-            <input
-              placeholder="Event Name"
-              style={{
-                flex: 1,
-                fontSize: '1.65rem',
-                fontWeight: 700,
-                border: 'none',
-                background: 'transparent',
-                outline: 'none',
-                color: dark,
-              }}
-            />
-            <button
-              type="button"
-              style={{
-                padding: '8px 14px',
-                borderRadius: '10px',
-                border: '1.5px solid rgba(14,118,120,0.18)',
-                background: 'rgba(255,255,255,0.9)',
-                color: muted,
-                fontWeight: 700,
-                fontFamily: 'inherit',
-                fontSize: '13px',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <PiGlobe size={14} color={tealSoft} />
-              Public
-              <PiCaretDown size={12} color={tealSoft} />
-            </button>
-          </div>
-
-          <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #b2e0e1, transparent)' }} />
-
-          <div style={{ display: 'grid', gap: '8px' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontWeight: 700,
-                color: muted,
-                fontSize: '13px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-              }}
-            >
-              <PiCalendarDots size={14} color={tealAccent} />
-              Date & Time
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              {['Start', 'End'].map((label) => (
-                <div
-                  key={label}
-                  className="date-box"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '11px 12px',
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #e8f7f7, #ffffff)',
-                    border: '1.5px solid rgba(14,118,120,0.18)',
-                    cursor: 'pointer',
-                    transition: 'border-color 0.2s, box-shadow 0.2s',
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        color: teal,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
-                        display: 'block',
-                        marginBottom: '2px',
-                      }}
-                    >
-                      {label}
-                    </span>
-                    <input
-                      type="date"
-                      style={{
-                        border: 'none',
-                        background: 'transparent',
-                        fontFamily: 'inherit',
-                        fontWeight: 700,
-                        fontSize: '13px',
-                        color: dark,
-                        outline: 'none',
-                        width: '100%',
-                      }}
-                    />
-                  </div>
-                  <PiClock size={14} color={tealAccent} />
-                  <input
-                    type="time"
-                    style={{
-                      width: '60px',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      color: dark,
-                      border: 'none',
-                      background: 'transparent',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '10px 14px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #e0f4f4, #f5fcfc)',
-                border: '1.5px solid rgba(14,118,120,0.18)',
-                fontSize: '13px',
-                color: muted,
-                fontWeight: 600,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <PiGlobeHemisphereEast size={14} color={tealAccent} />
-                GMT+05:30 - Calcutta
-              </div>
-              <PiCaretDown size={12} color={tealSoft} />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gap: '8px' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontWeight: 700,
-                color: muted,
-                fontSize: '13px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-              }}
-            >
-              <PiMapPin size={14} color={tealAccent} />
-              Event Location
-            </div>
-            <div
-              className="input-box"
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '10px',
-                padding: '12px 14px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #e8f7f7, #ffffff)',
-                border: '1.5px solid rgba(14,118,120,0.18)',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
-              }}
-            >
-              <PiMapPin size={15} color={tealSoft} style={{ marginTop: '2px', flexShrink: 0 }} />
-              <input
-                placeholder="Offline location or virtual link"
+          <div style={{ display: 'flex', gap: '12px' }}>
+             <div
                 style={{
-                  flex: 1,
-                  border: 'none',
-                  background: 'transparent',
-                  fontFamily: 'inherit',
-                  fontSize: '14px',
-                  color: dark,
-                  outline: 'none',
-                }}
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gap: '8px' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontWeight: 700,
-                color: muted,
-                fontSize: '13px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-              }}
-            >
-              <PiFileText size={14} color={tealAccent} />
-              Description
-            </div>
-            <div
-              className="input-box"
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '10px',
-                padding: '12px 14px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #e8f7f7, #ffffff)',
-                border: '1.5px solid rgba(14,118,120,0.18)',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
-              }}
-            >
-              <PiFileText size={15} color={tealSoft} style={{ marginTop: '3px', flexShrink: 0 }} />
-              <textarea
-                rows={3}
-                placeholder="Tell guests what makes this gathering special..."
-                style={{
-                  flex: 1,
-                  border: 'none',
-                  background: 'transparent',
-                  fontFamily: 'inherit',
-                  fontSize: '14px',
-                  color: dark,
-                  outline: 'none',
-                  resize: 'vertical',
-                }}
-              />
-            </div>
-          </div>
-
-          <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #b2e0e1, transparent)' }} />
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontWeight: 800,
-              color: dark,
-              fontSize: '13px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              paddingBottom: '4px',
-              borderBottom: '2px solid #b2e0e1',
-            }}
-          >
-            <PiSlidersHorizontal size={13} color={teal} />
-            Event Options
-          </div>
-
-          <div style={{ display: 'grid', gap: '10px' }}>
-            {optionRows.map((item) => (
-              <div
-                key={item.label}
-                className="option-row"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px 14px',
-                  borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #e8f7f7, #ffffff)',
-                  border: '1.5px solid rgba(14,118,120,0.18)',
-                  fontSize: '14px',
-                  color: dark,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'border-color 0.2s, box-shadow 0.2s',
-                }}
-              >
-                {item.icon}
-                <span style={{ flex: 1 }}>{item.label}</span>
-                <span style={{ color: teal, fontWeight: 700, fontSize: '13px' }}>{item.value}</span>
-              </div>
-            ))}
-          </div>
-
-          <button
-            type="submit"
-            className="submit-btn"
-            style={{
-              marginTop: '4px',
-              padding: '15px',
-              borderRadius: '14px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #0e7678, #1fb8ba)',
-              color: '#fff',
-              fontFamily: 'inherit',
-              fontWeight: 800,
-              fontSize: '1rem',
-              cursor: 'pointer',
-              letterSpacing: '0.04em',
-              boxShadow: '0 8px 24px rgba(14,118,120,0.35)',
-              transition: 'transform 0.15s, box-shadow 0.15s',
-              position: 'relative',
-              overflow: 'hidden',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-            }}
-          >
-            <span
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.15), transparent)',
-                pointerEvents: 'none',
-              }}
-            />
-            <span style={{ position: 'relative', zIndex: 1 }}>Create Event</span>
-            <PiArrowRight size={16} style={{ position: 'relative', zIndex: 1 }} />
-          </button>
-        </form>
-      </section>
-
-      {showAuth ? (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.35)',
-            display: 'grid',
-            placeItems: 'center',
-            zIndex: 20,
-            backdropFilter: 'blur(4px)',
-            padding: '20px',
-          }}
-        >
-          <div
-            style={{
-              width: '420px',
-              maxWidth: '100%',
-              borderRadius: '20px',
-              background: '#fff',
-              boxShadow: '0 24px 56px rgba(14,118,120,0.22)',
-              padding: '26px',
-              position: 'relative',
-            }}
-          >
-            <button
-              type="button"
-              aria-label="Close sign-in modal"
-              onClick={() => setShowAuth(false)}
-              style={{
-                position: 'absolute',
-                top: 14,
-                right: 14,
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                color: tealSoft,
-              }}
-            >
-              <PiX size={18} />
-            </button>
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: dark, marginBottom: '6px' }}>
-                Welcome to Luma
-              </div>
-              <div style={{ color: tealSoft, fontSize: '0.95rem' }}>Please sign in or sign up below.</div>
-            </div>
-            <div style={{ display: 'grid', gap: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontWeight: 700, color: muted, fontSize: '13px', marginBottom: '6px' }}>
-                  Email
-                </label>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderRadius: '12px',
-                    border: '1.5px solid rgba(14,118,120,0.2)',
-                    background: 'linear-gradient(135deg, #e8f7f7, #fff)',
-                    padding: '11px 14px',
-                    gap: '10px',
-                  }}
-                >
-                  <PiEnvelopeSimple size={16} color={tealSoft} />
-                  <input
-                    placeholder="you@email.com"
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      width: '100%',
-                      fontFamily: 'inherit',
-                      fontSize: '14px',
-                      outline: 'none',
-                      color: dark,
-                    }}
-                  />
-                </div>
-              </div>
-              <button
-                type="button"
-                style={{
-                  padding: '13px',
-                  borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #0e7678, #1fb8ba)',
-                  color: '#fff',
-                  fontWeight: 800,
-                  fontFamily: 'inherit',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  letterSpacing: '0.03em',
-                }}
-              >
-                Continue with Email
-              </button>
-              {authButtons.map((btn) => (
-                <button
-                  key={btn.label}
-                  type="button"
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: '12px',
-                    background: '#fff',
-                    border: '1.5px solid rgba(14,118,120,0.18)',
+                    flex: 1,
+                    background: colors.cardBg,
+                    padding: '12px 16px',
+                    borderRadius: '16px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    fontWeight: 700,
-                    fontFamily: 'inherit',
-                    fontSize: '14px',
+                    border: `1px solid ${colors.border}`,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.04)'
+                }}
+             >
+                <div style={{ width: 36, height: 26, background: '#f5e8f5', borderRadius: '6px', border: '1px solid #eee' }} />
+                <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700, textTransform: 'uppercase' }}>Theme</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600 }}>Minimal</div>
+                </div>
+                <PiCaretDown size={14} color={colors.headerIcon} />
+             </div>
+             
+             <button
+                style={{
+                    width: 54,
+                    height: 54,
+                    borderRadius: '16px',
+                    background: colors.cardBg,
+                    border: `1px solid ${colors.border}`,
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: colors.headerIcon,
                     cursor: 'pointer',
-                    color: dark,
-                  }}
-                >
-                  {btn.icon} {btn.label}
-                </button>
-              ))}
-            </div>
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.04)'
+                }}
+             >
+                <PiShuffle size={20} />
+             </button>
           </div>
         </div>
-      ) : null}
+
+        {/* Right Column: Form */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '6px', 
+                  padding: '6px 12px', 
+                  background: '#f8ecec', 
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#4a5555'
+              }}>
+                  <span style={{ fontSize: '14px' }}>🎃</span>
+                  Personal Calendar
+                  <PiCaretDown size={12} />
+              </div>
+              
+              <div style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '6px', 
+                  padding: '6px 12px', 
+                  background: colors.inputBg, 
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#4a5555'
+              }}>
+                  <PiGlobe size={14} />
+                  Public
+                  <PiCaretDown size={12} />
+              </div>
+          </div>
+
+          <input
+            placeholder="Event Name"
+            value={eventName}
+            onChange={(e) => setEventName(e.target.value)}
+            style={{
+              fontSize: '2.4rem',
+              fontWeight: 700,
+              border: 'none',
+              background: 'transparent',
+              outline: 'none',
+              color: '#3d4d4d',
+              padding: '0',
+            }}
+          />
+
+          {/* Date Selection Box */}
+          <div style={{ 
+              background: colors.inputBg, 
+              borderRadius: '20px', 
+              padding: '4px',
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              alignItems: 'center',
+              gap: '12px'
+          }}>
+              <div style={{ padding: '4px' }}>
+                {/* Start Row */}
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    padding: '12px 12px', 
+                    gap: '12px',
+                    position: 'relative'
+                }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#c0cccc' }} />
+                         <div style={{ position: 'absolute', top: 8, left: 3.5, width: 1, height: 40, borderLeft: '1px dashed #c0cccc' }} />
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: colors.textMuted, width: 40 }}>Start</span>
+                    <span style={{ fontSize: '15px', fontWeight: 600, color: colors.textMain, flex: 1 }}>Fri 17 Apr</span>
+                    <div style={{ position: 'relative' }}>
+                        <span style={{ fontSize: '15px', fontWeight: 600, color: colors.textMain, padding: '4px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.03)' }}>19:00</span>
+                    </div>
+                </div>
+                
+                {/* End Row */}
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    padding: '12px 12px', 
+                    gap: '12px'
+                }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', border: '1.5px solid #c0cccc' }} />
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: colors.textMuted, width: 40 }}>End</span>
+                    <span style={{ fontSize: '15px', fontWeight: 600, color: colors.textMain, flex: 1 }}>Fri 17 Apr</span>
+                    <span style={{ fontSize: '15px', fontWeight: 600, color: colors.textMain, padding: '4px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.03)' }}>20:00</span>
+                </div>
+              </div>
+
+              {/* Timezone side component */}
+              <div style={{ 
+                  padding: '12px 20px', 
+                  borderLeft: `1px solid ${colors.border}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+              }}>
+                   <PiGlobe size={16} color={colors.headerIcon} />
+                   <div style={{ fontSize: '11px', fontWeight: 700, color: colors.textMain }}>GMT+05:30</div>
+                   <div style={{ fontSize: '10px', fontWeight: 500, color: colors.textMuted }}>Calcutta</div>
+              </div>
+          </div>
+
+          <div className="input-row">
+            <PiMapPin size={18} color={colors.headerIcon} />
+            <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: 600 }}>Add Event Location</div>
+                <div style={{ fontSize: '12px', color: colors.textMuted }}>Offline location or virtual link</div>
+            </div>
+          </div>
+
+          <div className="input-row">
+            <PiFileText size={18} color={colors.headerIcon} />
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>Add Description</span>
+          </div>
+
+          {/* Options Section */}
+          <div style={{ marginTop: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: colors.textMuted, textTransform: 'uppercase', marginBottom: '12px' }}>Event Options</div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', background: colors.inputBg, borderRadius: '16px', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px' }}>
+                      <PiTicket size={18} color={colors.headerIcon} />
+                      <span style={{ flex: 1, fontSize: '14px', fontWeight: 600 }}>Ticket Price</span>
+                      <span style={{ fontSize: '14px', color: colors.headerIcon }}>Free</span>
+                      <PiSparkle size={14} color={colors.headerIcon} />
+                  </div>
+                  
+                  <div style={{ height: '1px', background: 'rgba(0,0,0,0.04)', margin: '0 16px' }} />
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px' }}>
+                      <PiShieldCheck size={18} color={colors.headerIcon} />
+                      <span style={{ flex: 1, fontSize: '14px', fontWeight: 600 }}>Require Approval</span>
+                      <div className="option-toggle" />
+                  </div>
+                  
+                  <div style={{ height: '1px', background: 'rgba(0,0,0,0.04)', margin: '0 16px' }} />
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px' }}>
+                      <PiUsers size={18} color={colors.headerIcon} />
+                      <span style={{ flex: 1, fontSize: '14px', fontWeight: 600 }}>Capacity</span>
+                      <span style={{ fontSize: '14px', color: colors.headerIcon }}>Unlimited</span>
+                      <PiSparkle size={14} color={colors.headerIcon} />
+                  </div>
+              </div>
+          </div>
+
+          <button
+            onClick={() => router.push(routes.luma.eventDetail)}
+            style={{
+              marginTop: '4px',
+              width: '100%',
+              padding: '16px',
+              borderRadius: '12px',
+              background: colors.button,
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+            }}
+          >
+            Create Event
+          </button>
+        </div>
+      </div>
     </main>
   );
+}
+
+function PiGlobe({ size, color }: { size?: number; color?: string }) {
+    return (
+        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 256 256" height={size || "1em"} width={size || "1em"} xmlns="http://www.w3.org/2000/svg" style={{ color: color }}>
+            <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM128,216c-13.84,0-26.6-11.93-35.32-32H163.32C154.6,204.07,141.84,216,128,216ZM89.84,168c-2-12.38-3-26-3-40s1-27.62,3-40h76.32c2,12.38,3,26,3,40s-1,27.62-3,40ZM128,40c13.84,0,26.6,11.93,35.32,32H92.68C101.4,51.93,114.16,40,128,40ZM76.4,72H43.14a88.16,88.16,0,0,1,33.26-33.3ZM43.14,184H76.4c-6.81,17.2-18,29-33.26,33.3a88.16,88.16,0,0,1-33.26-33.3ZM40,128c0-14,1-27.42,2.83-40H73.57a177.6,177.6,0,0,0-1.57,40,177.6,177.6,0,0,0,1.57,40H42.83C41,155.42,40,142,40,128Zm139.6,89.3c-15.3-4.3-26.45-16.1-33.26-33.3h33.26A88.16,88.16,0,0,1,179.6,217.3ZM212.86,184H182.43a177.6,177.6,0,0,0,1.57-40,177.6,177.6,0,0,0-1.57-40h30.43c1.8,12.58,2.83,26,2.83,40S214.66,155.42,212.86,184Zm.28-96H179.6a88.16,88.16,0,0,1,33.26-33.3C211.14,55,212.19,72,213.14,88Z"></path>
+        </svg>
+    )
 }
