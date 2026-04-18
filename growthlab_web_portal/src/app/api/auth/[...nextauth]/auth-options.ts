@@ -180,9 +180,15 @@ function getConfiguredOAuthProviders(): AuthProvider[] {
 }
 
 const oauthProviders = getConfiguredOAuthProviders();
+const nextAuthSecret =
+  process.env.NEXTAUTH_SECRET ||
+  (process.env.NODE_ENV !== 'production'
+    ? 'development-secret-change-me'
+    : undefined);
 
 export const authOptions: NextAuthOptions = {
   // debug: true,
+  secret: nextAuthSecret,
   pages: {
     ...pagesOptions,
   },

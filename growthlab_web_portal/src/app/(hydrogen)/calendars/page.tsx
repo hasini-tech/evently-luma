@@ -55,7 +55,8 @@ export default function CalendarsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen w-full py-8">
+      <div className="mx-auto w-full max-w-[1180px]">
       <PageHeader
         title="Calendars"
         breadcrumb={[
@@ -115,6 +116,7 @@ export default function CalendarsPage() {
             </div>
           )}
         </section>
+      </div>
       </div>
     </div>
   );

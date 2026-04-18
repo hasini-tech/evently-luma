@@ -5,6 +5,7 @@ export const routes = {
   },
   feed: '/feed',
   events: '/events',
+  eventsBrowse: '/events/browse',
   discover: '/discover',
   createEvent: '/create-event',
   calendars: '/calendars',

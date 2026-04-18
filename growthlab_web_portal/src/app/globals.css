@@ -86,6 +86,8 @@
     --green-lighter: 185 249 207; /* #b9f9cf */
     --green-default: 17 168 73; /* #11a849 */
     --green-dark: 17 132 60; /* #11843c */
+    --primary-soft: rgba(15, 115, 119, 0.1);
+    --teal-050: rgba(14, 118, 120, 0.08);
   }
 
   /* dark theme */
@@ -161,6 +163,30 @@
     /* ----------------------------------- */
     --green-lighter: 3 48 22; /* #033016 */
     --green-dark: 185 249 207; /* #b9f9cf */
+    --primary-soft: rgba(15, 115, 119, 0.24);
+    --teal-050: rgba(15, 115, 119, 0.2);
+    --surface-color: rgba(15, 23, 42, 0.94);
+    --shadow-card: 0 18px 36px rgba(2, 6, 23, 0.24);
+    --surface-panel-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.88));
+    --surface-panel-bg-strong:
+      linear-gradient(135deg, rgba(15, 115, 119, 0.18), rgba(15, 23, 42, 0.92) 52%, rgba(2, 6, 23, 0.92));
+    --surface-panel-bg-accent:
+      linear-gradient(135deg, rgba(15, 115, 119, 0.22), rgba(15, 23, 42, 0.92) 52%, rgba(2, 6, 23, 0.94));
+    --events-page-bg:
+      radial-gradient(circle at 12% 10%, rgba(14, 118, 120, 0.22), transparent 22%), linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
+    --events-visual-bg:
+      radial-gradient(circle at 50% 45%, rgba(15, 115, 119, 0.18), transparent 48%), linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
+    --events-preview-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+    --events-preview-art-bg:
+      radial-gradient(circle at 50% 40%, rgba(15, 115, 119, 0.16), transparent 44%), linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.96));
+    --events-card-bg: rgba(15, 23, 42, 0.96);
+    --events-card-border: rgba(148, 163, 184, 0.22);
+    --events-divider: rgba(148, 163, 184, 0.18);
+    --events-tabs-shell-bg: rgba(15, 23, 42, 0.76);
+    --events-error-bg: rgba(127, 29, 29, 0.2);
+    --events-error-border: rgba(248, 113, 113, 0.28);
+    --events-shadow-panel: 0 12px 24px rgba(2, 6, 23, 0.24);
+    --events-shadow-card: 0 28px 60px rgba(2, 6, 23, 0.36);
 
     /* here you can customize other colors for dark theme if design required */
   }
@@ -486,10 +512,30 @@ select:-webkit-autofill:focus {
   --text-tertiary: #94a3b8;
   --border-color: rgba(15, 115, 119, 0.14);
   --border-strong: rgba(15, 115, 119, 0.26);
-  --surface-color: rgba(255, 255, 255, 0.94);
-  --shadow-soft: 0 20px 40px rgba(16, 36, 42, 0.08);
-  --shadow-card: 0 14px 28px rgba(16, 36, 42, 0.06);
-}
+    --surface-color: rgba(255, 255, 255, 0.94);
+    --shadow-soft: 0 20px 40px rgba(16, 36, 42, 0.08);
+    --shadow-card: 0 14px 28px rgba(16, 36, 42, 0.06);
+    --surface-panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 251, 251, 0.96));
+    --surface-panel-bg-strong:
+      linear-gradient(135deg, rgba(240, 249, 249, 0.98), rgba(255, 255, 255, 0.96) 52%, rgba(244, 251, 251, 0.98));
+    --surface-panel-bg-accent:
+      linear-gradient(135deg, rgba(14, 118, 120, 0.08), rgba(255, 255, 255, 0.96) 52%, rgba(244, 251, 251, 0.98));
+    --events-page-bg:
+      radial-gradient(circle at 12% 10%, rgba(14, 118, 120, 0.1), transparent 22%), linear-gradient(180deg, #ffffff 0%, #f5fbfb 100%);
+    --events-visual-bg:
+      radial-gradient(circle at 50% 45%, rgba(15, 115, 119, 0.12), transparent 48%), linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 251, 251, 0.96));
+    --events-preview-bg: linear-gradient(180deg, rgba(244, 248, 255, 0.98), rgba(233, 240, 250, 0.96));
+    --events-preview-art-bg:
+      radial-gradient(circle at 50% 40%, rgba(15, 115, 119, 0.08), transparent 44%), linear-gradient(180deg, #eef5ff, #f7fbff);
+    --events-card-bg: #ffffff;
+    --events-card-border: rgba(15, 115, 119, 0.14);
+    --events-divider: rgba(14, 118, 120, 0.14);
+    --events-tabs-shell-bg: rgba(255, 255, 255, 0.88);
+    --events-error-bg: rgba(255, 244, 244, 0.96);
+    --events-error-border: rgba(220, 38, 38, 0.14);
+    --events-shadow-panel: 0 12px 24px rgba(16, 36, 42, 0.05);
+    --events-shadow-card: 0 28px 60px rgba(16, 36, 42, 0.12);
+  }
 
 .page-shell {
   width: min(1180px, calc(100% - 32px));
@@ -501,6 +547,33 @@ select:-webkit-autofill:focus {
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-card);
   backdrop-filter: blur(18px);
+}
+
+.events-page {
+  min-height: 100vh;
+  background: var(--events-page-bg);
+  color: var(--text-primary);
+}
+
+.surface-panel {
+  background: var(--surface-panel-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--events-shadow-panel);
+  backdrop-filter: blur(18px);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--events-tabs-shell-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .primary-button,
@@ -533,7 +606,7 @@ select:-webkit-autofill:focus {
 
 .secondary-button {
   border: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--surface-color);
   color: var(--text-primary);
   box-shadow: var(--shadow-card);
 }

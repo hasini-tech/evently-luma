@@ -1,11 +1,18 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
+const nextAuthSecret =
+  process.env.NEXTAUTH_SECRET ||
+  (process.env.NODE_ENV !== 'production'
+    ? 'development-secret-change-me'
+    : undefined);
+
 export default withAuth(
   function middleware(req) {
     return NextResponse.next();
   },
   {
+    secret: nextAuthSecret,
     callbacks: {
       authorized: ({ req, token }) => {
         const { pathname } = req.nextUrl;
@@ -37,5 +44,7 @@ export default withAuth(
 
 export const config = {
   // Apply middleware to all routes except api, _next/static, _next/image, favicon.ico
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|avif)$).*)',
+  ],
 };

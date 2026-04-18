@@ -648,14 +648,14 @@ export default function CalendarDetailPageClient({ slug }: { slug: string }) {
 
   if (error || !calendar) {
     return (
-      <main style={{ maxWidth: 960, margin: '0 auto', padding: '44px 20px 80px' }}>
+      <main style={calendarPageShellStyle}>
         <ErrorState message={error || 'This calendar could not be loaded.'} />
       </main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 1140, margin: '0 auto', padding: '34px 20px 80px' }}>
+    <main style={calendarPageShellStyle}>
       <CalendarHeader calendar={calendar} />
 
       <section style={{ borderBottom: '1px solid rgba(148,163,184,0.22)', marginBottom: 24 }}>
@@ -919,38 +919,47 @@ function EventsTab({
             <Plus size={16} />
           </Link>
         </div>
-        <div
-          style={{
-            display: 'inline-flex',
-            padding: 4,
-            borderRadius: 14,
-            background: '#f3f4f6',
-            border: '1px solid rgba(148,163,184,0.18)',
-          }}
-        >
-          {(['upcoming', 'past'] as const).map((value) => {
-            const isActive = timelineFilter === value;
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => onTimelineFilterChange(value)}
-                style={{
-                  border: 'none',
-                  background: isActive ? '#fff' : 'transparent',
-                  color: isActive ? '#111827' : '#9ca3af',
-                  padding: '10px 16px',
-                  borderRadius: 10,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  boxShadow: isActive ? '0 8px 18px rgba(17,39,45,0.08)' : 'none',
-                  textTransform: 'capitalize',
-                }}
-              >
-                {value}
-              </button>
-            );
-          })}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <Link
+            href={routes.events}
+            className="secondary-button"
+            style={{ minHeight: 40, paddingInline: 14, borderRadius: 12, textDecoration: 'none' }}
+          >
+            Browse Events
+          </Link>
+          <div
+            style={{
+              display: 'inline-flex',
+              padding: 4,
+              borderRadius: 14,
+              background: '#f3f4f6',
+              border: '1px solid rgba(148,163,184,0.18)',
+            }}
+          >
+            {(['upcoming', 'past'] as const).map((value) => {
+              const isActive = timelineFilter === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => onTimelineFilterChange(value)}
+                  style={{
+                    border: 'none',
+                    background: isActive ? '#fff' : 'transparent',
+                    color: isActive ? '#111827' : '#9ca3af',
+                    padding: '10px 16px',
+                    borderRadius: 10,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: isActive ? '0 8px 18px rgba(17,39,45,0.08)' : 'none',
+                    textTransform: 'capitalize',
+                  }}
+                >
+                  {value}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -1018,10 +1027,10 @@ function EventsTab({
                         <div
                           style={{
                             display: 'grid',
-                            gridTemplateColumns: '1fr 128px',
+                            gridTemplateColumns: 'minmax(0, 1fr) 112px',
                             gap: 18,
-                            padding: 18,
-                            borderRadius: 22,
+                            padding: 20,
+                            borderRadius: 24,
                             background: '#fff',
                             border: '1px solid rgba(148,163,184,0.16)',
                             boxShadow: '0 14px 36px rgba(17,39,45,0.05)',
@@ -1037,10 +1046,10 @@ function EventsTab({
                             </div>
                             <div
                               style={{
-                                fontSize: '1.8rem',
+                                fontSize: '1.5rem',
                                 fontWeight: 800,
                                 color: '#111827',
-                                marginBottom: 10,
+                                marginBottom: 8,
                               }}
                             >
                               {event.title}
@@ -1063,7 +1072,7 @@ function EventsTab({
                                 <span>
                                   {event.attendee_count > 0
                                     ? `${event.attendee_count} guest${event.attendee_count === 1 ? '' : 's'}`
-                                    : 'No guests'}
+                                    : 'No guests yet'}
                                 </span>
                               </div>
                               <div style={metaRowStyle}>
@@ -1083,9 +1092,9 @@ function EventsTab({
                           <div
                             style={{
                               alignSelf: 'center',
-                              width: 108,
-                              height: 108,
-                              borderRadius: 16,
+                              width: 112,
+                              height: 112,
+                              borderRadius: 18,
                               overflow: 'hidden',
                               background: '#f3f4f6',
                             }}
@@ -1284,7 +1293,7 @@ function NewslettersTab({
       {!verified && (
         <div
           style={{
-            borderRadius: 16,
+            borderRadius: 18,
             border: '1px solid rgba(245,158,11,0.28)',
             background: 'rgba(255,247,237,0.9)',
             padding: '14px 16px',
@@ -1356,7 +1365,7 @@ function NewslettersTab({
       </div>
 
       <div style={{ borderTop: '1px solid rgba(148,163,184,0.18)', paddingTop: 24 }}>
-        <h3 style={{ margin: '0 0 14px', fontSize: '1.8rem', fontWeight: 800 }}>Published</h3>
+        <h3 style={{ margin: '0 0 14px', fontSize: '1.5rem', fontWeight: 800 }}>Published</h3>
         {published.length > 0 ? (
           <div style={{ display: 'grid', gap: 14 }}>
             {published.map((item) => (
@@ -1414,7 +1423,7 @@ function PaymentTab({
         <h2 style={{ margin: '0 0 16px', fontSize: '2rem', fontWeight: 800 }}>Ticket Sales</h2>
         <div style={panelStyle}>
           <div style={{ display: 'grid', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#111827', fontWeight: 800, fontSize: '1.8rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#111827', fontWeight: 800, fontSize: '1.5rem' }}>
               <CreditCard size={24} color="var(--primary-color)" />
               Start Selling Tickets
             </div>
@@ -1439,7 +1448,7 @@ function PaymentTab({
       <div style={{ borderTop: '1px solid rgba(148,163,184,0.18)', paddingTop: 28 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800 }}>Coupons</h3>
+            <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Coupons</h3>
             <p style={{ margin: '6px 0 0', color: '#64748b' }}>
               Create coupons that can be applied to any event managed by your calendar.
             </p>
@@ -1536,7 +1545,7 @@ function InsightsTab({
 
       <div style={panelStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
-          <h3 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800 }}>Event Performance</h3>
+          <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Event Performance</h3>
           <div style={metricPillStyle}>By Event</div>
         </div>
         {rankedEvents.length === 0 ? (
@@ -2033,7 +2042,7 @@ function FeatureMini({ title }: { title: string }) {
     <div
       style={{
         padding: '18px 12px',
-        borderRadius: 16,
+        borderRadius: 18,
         background: '#f8fafc',
         border: '1px solid rgba(148,163,184,0.16)',
         color: '#475569',
@@ -2093,6 +2102,13 @@ const emptyPanelStyle: React.CSSProperties = {
   color: '#64748b',
 };
 
+const calendarPageShellStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: 'none',
+  margin: 0,
+  padding: '28px 0 84px',
+};
+
 const fieldStyle: React.CSSProperties = {
   width: '100%',
   minHeight: 42,
@@ -2150,7 +2166,7 @@ const listRowStyle: React.CSSProperties = {
   gap: 16,
   alignItems: 'center',
   padding: '14px 16px',
-  borderRadius: 16,
+  borderRadius: 18,
   background: '#fff',
   border: '1px solid rgba(148,163,184,0.18)',
 };
@@ -2287,3 +2303,5 @@ function statusToggleStyle(active: boolean): React.CSSProperties {
     cursor: 'pointer',
   };
 }
+
+
