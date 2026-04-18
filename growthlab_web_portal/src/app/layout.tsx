@@ -9,6 +9,8 @@ import { inter, lexendDeca } from '@/app/fonts';
 import cn from '@/utils/class-names';
 import NextProgress from '@/components/next-progress';
 import NextAuthProvider from '@/app/api/auth/[...nextauth]/auth-provider';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/auth-options';
 
 // styles
 import 'swiper/css';
@@ -20,11 +22,13 @@ export const metadata = {
   description: siteConfig.description,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html
       lang="en"
@@ -37,7 +41,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className={cn(inter.variable, lexendDeca.variable, 'font-inter')}
       >
-        <NextAuthProvider>
+        <NextAuthProvider session={session || null}>
           <AuthProvider>
             <ThemeProvider>
               <NextProgress />

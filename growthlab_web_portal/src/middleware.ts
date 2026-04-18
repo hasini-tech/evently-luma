@@ -36,6 +36,7 @@ export default withAuth(
         return true;
       },
     },
+    secret: 'pYn8fR2kL5mN9qS1vX4zW7hJ0gB3eD6aC9xY2zL5mV8',
     pages: {
       signIn: '/signin', // Redirect here if unauthenticated on a private route
     },
