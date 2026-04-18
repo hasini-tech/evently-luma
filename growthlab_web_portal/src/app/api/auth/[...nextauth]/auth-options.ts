@@ -182,6 +182,7 @@ function getConfiguredOAuthProviders(): AuthProvider[] {
 const oauthProviders = getConfiguredOAuthProviders();
 
 export const authOptions: NextAuthOptions = {
+  secret: 'pYn8fR2kL5mN9qS1vX4zW7hJ0gB3eD6aC9xY2zL5mV8',
   // debug: true,
   pages: {
     ...pagesOptions,
