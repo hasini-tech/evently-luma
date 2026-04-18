@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -389,9 +390,14 @@ export default function ManageEventPage() {
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "34px 18px 72px" }}>
         {/* Breadcrumb & Header */}
         <div style={{ marginBottom: 32 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#666", fontSize: "0.9rem", marginBottom: 10 }}>
-            <span>Personal</span>
-            <ChevronRight size={14} />
+          <div 
+            onClick={() => router.back()}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--manage-muted)", fontSize: "0.92rem", marginBottom: 10, cursor: "pointer", transition: "color 0.2s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#000")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--manage-muted)")}
+          >
+            <ArrowLeft size={14} />
+            <span style={{ fontWeight: 600 }}>Personal</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <h1 style={{ fontSize: "2.6rem", fontWeight: 800, margin: 0, letterSpacing: "-0.04em" }}>{event.title}</h1>
@@ -399,7 +405,7 @@ export default function ManageEventPage() {
               href={`/events/${event.slug}`} 
               target="_blank" 
               rel="noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 10, background: "#f5f5f5", color: "#333", fontWeight: 700, fontSize: "0.88rem", textDecoration: "none" }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 10, background: "var(--manage-hover)", color: "var(--manage-fg)", fontWeight: 700, fontSize: "0.88rem", textDecoration: "none" }}
             >
               Event Page <ExternalLink size={14} />
             </a>
@@ -412,197 +418,116 @@ export default function ManageEventPage() {
         {/* Main Content Sections */}
         <section style={{ marginTop: 0 }}>
           {activeTab === "overview" && (
-            <div style={{ display: "grid", gap: 24 }}>
-              {/* Quick Action Buttons */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-                <div onClick={() => setInviteOpen(true)} style={quickActionCard}>
-                  <div style={{ ...iconCircle, background: "rgba(0, 102, 255, 0.08)", color: "#0066FF" }}><Users size={20} /></div>
-                  <span style={{ fontWeight: 700, fontSize: "0.98rem" }}>Invite Guests</span>
-                </div>
-                <div onClick={() => setActiveTab("blasts")} style={quickActionCard}>
-                  <div style={{ ...iconCircle, background: "rgba(147, 51, 234, 0.08)", color: "#9333ea" }}><Zap size={20} /></div>
-                  <span style={{ fontWeight: 700, fontSize: "0.98rem" }}>Send a Blast</span>
-                </div>
-                <div onClick={shareEvent} style={quickActionCard}>
-                  <div style={{ ...iconCircle, background: "rgba(236, 72, 153, 0.08)", color: "#ec4899" }}><Share2 size={20} /></div>
-                  <span style={{ fontWeight: 700, fontSize: "0.98rem" }}>Share Event</span>
-                </div>
-              </div>
+            <div style={{ display: "grid", gap: 32 }}>
+               {/* Event Status / Header */}
+               {eventDate && eventDate.getTime() < Date.now() ? (
+                 <div>
+                   <h3 style={{ fontSize: "1.45rem", fontWeight: 800, margin: "0 0 8px" }}>This Event Has Ended</h3>
+                   <p style={{ color: "var(--manage-muted)", fontSize: "0.95rem", margin: 0 }}>Thank you for hosting. We hope it was a success!</p>
+                 </div>
+               ) : (
+                 <div>
+                   <h3 style={{ fontSize: "1.45rem", fontWeight: 800, margin: "0 0 8px" }}>Event Dashboard</h3>
+                   <p style={{ color: "var(--manage-muted)", fontSize: "0.95rem", margin: 0 }}>Manage your event details and guests.</p>
+                 </div>
+               )}
 
-              {/* Event Summary Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "1.18fr 1fr", gap: 20, alignItems: "start" }}>
-                {/* Left: Event Card Visual */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  <div style={{ background: "#fff", border: "1px solid #f0f0f0", borderRadius: 22, overflow: "hidden", boxShadow: "0 10px 24px rgba(0,0,0,0.04)" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "160px 1fr" }}>
-                      <div style={{ height: 150, background: `url(${event.cover_image || DEFAULT_EVENT_COVER}) center/cover` }} />
-                      <div style={{ padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                        <div>
-                          <div style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 10, letterSpacing: "-0.03em" }}>{event.title}</div>
-                          <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 10 }}>
-                            <div style={dateBadgeMini}>
-                              <div style={{ fontSize: "0.6rem", textTransform: "uppercase", fontWeight: 700, color: "#ef4444" }}>{eventDate ? eventDate.toLocaleDateString(undefined, { month: "short" }) : "Mo"}</div>
-                              <div style={{ fontSize: "0.9rem", fontWeight: 800 }}>{eventDate ? eventDate.getDate() : "1"}</div>
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: 700, fontSize: "0.88rem" }}>{formattedDate.split(",")[1]?.trim() || formattedDate}</div>
-                              <div style={{ fontSize: "0.82rem", color: "#666" }}>{formattedTime} - {formattedTime}</div>
-                            </div>
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.88rem", color: "#666" }}>
-                            <MapPin size={14} /> <span>{event.is_online ? "Registration for Address" : (event.location || "Register to See Address")}</span>
-                          </div>
-                        </div>
+               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                 {/* Event Recap */}
+                 <div style={{ padding: 24, background: "var(--manage-card)", borderRadius: 16, border: "1px solid #f1f1f1", boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--manage-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Event Recap</span>
+                      <LinkIcon size={14} color="var(--manage-muted)" style={{ cursor: 'pointer' }} onClick={shareEvent} />
+                    </div>
+                    <div style={{ display: "grid", gap: 12, color: "var(--manage-fg)", fontSize: "0.95rem", fontWeight: 500 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <Calendar size={16} color="var(--manage-muted)" />
+                        <span>{formattedDate}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <Clock3 size={16} color="var(--manage-muted)" />
+                        <span>{formattedTime} GMT{eventDate ? eventDate.toLocaleTimeString("en-us",{timeZoneName:"short"}).split(" ").pop() : "+5:30"}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <MapPin size={16} color="var(--manage-muted)" />
+                        <span>{event.is_online ? "Virtual Event" : event.location || "Offline"}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <User size={16} color="var(--manage-muted)" />
+                        <span>{event.attendee_count || guests.length || 0} Guest{guests.length !== 1 ? 's' : ''}</span>
                       </div>
                     </div>
-                    {/* Hosted By Section */}
-                    <div style={{ padding: "0 18px 18px", marginTop: -4 }}>
-                      <div style={{ fontSize: "0.74rem", fontWeight: 700, color: "#999", textTransform: "uppercase", marginBottom: 8, letterSpacing: "0.05em" }}>Hosted By</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f0f0f0", overflow: "hidden" }}>
-                          {user?.profile_image ? <img src={user.profile_image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <Users size={16} style={{ transform: "translate(6px, 6px)" }} />}
-                        </div>
-                        <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>{user?.name || "Host"}</span>
-                      </div>
-                      
-                      {/* One Click RSVP placeholder (as in screenshot) */}
-                      <div style={{ marginTop: 20, padding: 16, borderRadius: 16, background: "#f9f9f9", border: "1px solid #efefef" }}>
-                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                            <div style={{ fontSize: "0.86rem", fontWeight: 700 }}>Registration</div>
-                            <div style={{ padding: "4px 8px", background: "white", borderRadius: 8, fontSize: "0.72rem", border: "1px solid #eee" }}>Status</div>
-                         </div>
-                         <button disabled style={{ width: "100%", padding: "12px", borderRadius: 10, background: "#9333ea", color: "white", fontWeight: 800, border: "none", opacity: 0.8 }}>One-Click RSVP</button>
-                      </div>
-                    </div>
-                    
-                    {/* Event URL Bar */}
-                    <div style={{ marginTop: 4, display: "grid", gridTemplateColumns: "1fr auto", borderTop: "1px solid #f0f0f0" }}>
-                       <div style={{ padding: "14px 20px", background: "#f8f8f8", color: "#666", fontSize: "0.9rem", fontWeight: 600 }}>{shareUrl.replace(/^https?:\/\//, "")} ↗</div>
-                       <div onClick={async() => { await copyText(shareUrl); setMessage("Link copied."); }} style={{ padding: "14px 24px", background: "#ddd", color: "#666", fontWeight: 800, fontSize: "0.8rem", cursor: "pointer", letterSpacing: "0.05em" }}>COPY</div>
-                    </div>
-                  </div>
-                  {/* Footer Social Icons */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 4px" }}>
-                    <span style={{ fontSize: "0.9rem", color: "#666", fontWeight: 600 }}>Share Event</span>
-                    <div style={{ display: "flex", gap: 14, color: "#666" }}>
-                      <Facebook size={18} style={{ cursor: "pointer" }} />
-                      <Twitter size={18} style={{ cursor: "pointer" }} />
-                      <Linkedin size={18} style={{ cursor: "pointer" }} />
-                      <Mail size={18} style={{ cursor: "pointer" }} />
-                    </div>
-                  </div>
-                </div>
+                 </div>
 
-                {/* Right: When & Where Section */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <Card style={{ padding: 32 }}>
-                    <h3 style={{ margin: "0 0 24px", fontSize: "1.2rem", fontWeight: 800 }}>When & Where</h3>
-                    <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 28 }}>
-                      <div style={dateBadgeLarge}>
-                        <div style={{ fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, color: "#999" }}>{eventDate ? eventDate.toLocaleDateString(undefined, { month: "short" }) : "Mo"}</div>
-                        <div style={{ fontSize: "1.2rem", fontWeight: 800 }}>{eventDate ? eventDate.getDate() : "1"}</div>
-                      </div>
+                 {/* Feedback */}
+                 <div style={{ padding: 24, background: "var(--manage-card)", borderRadius: 16, border: "1px solid #f1f1f1", boxShadow: "0 4px 12px rgba(0,0,0,0.02)", display: "flex", flexDirection: "column" }}>
+                    <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--manage-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 20 }}>Feedback</div>
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+                      <div style={{ marginBottom: 16 }}><span style={{ display: "inline-block", background: "var(--manage-hover)", padding: "12px", borderRadius: "50%", fontSize: "1.2rem" }}>💬</span></div>
+                      <div style={{ fontWeight: 700, fontSize: "1rem", marginBottom: 4 }}>No Feedback Collected</div>
+                      <div style={{ color: "var(--manage-muted)", fontSize: "0.85rem", marginBottom: 12 }}>You are not collecting feedback for this event.</div>
+                      <button style={{ color: "#ec4899", fontWeight: 700, fontSize: "0.9rem", background: "none", border: "none", cursor: "pointer", padding: 0 }}>Schedule Feedback Email</button>
+                    </div>
+                 </div>
+               </div>
+
+               {/* Invitations */}
+               <div>
+                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                   <h3 style={{ fontSize: "1.45rem", fontWeight: 800, margin: 0 }}>Invitations</h3>
+                   <button onClick={() => setInviteOpen(true)} style={{ background: "none", color: "var(--manage-muted)", border: "none", fontWeight: 600, fontSize: "0.9rem", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                     <Plus size={16} /> Invite Guests
+                   </button>
+                 </div>
+                 <p style={{ color: "var(--manage-muted)", fontSize: "0.95rem", marginTop: 8, marginBottom: 24 }}>Invite subscribers, contacts and past guests via email or SMS.</p>
+                 
+                 <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 20 }}>
+                   <div style={{ padding: 24, background: "var(--manage-card)", borderRadius: 16, border: "1px solid #f1f1f1", boxShadow: "0 4px 12px rgba(0,0,0,0.02)", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
+                      <ExternalLink size={14} color="#ccc" style={{ position: "absolute", top: 20, right: 20 }} />
                       <div>
-                        <div style={{ fontSize: "1.1rem", fontWeight: 800, marginBottom: 4 }}>{formattedDate.split(",")[0] === "Today" ? "Today" : (formattedDate.split(",")[1]?.trim() || formattedDate)}</div>
-                        <div style={{ fontSize: "0.95rem", color: "#666", fontWeight: 500 }}>{formattedTime} - {formattedTime} GMT{eventDate ? eventDate.toLocaleTimeString("en-us",{timeZoneName:"short"}).split(" ").pop() : "+5:30"}</div>
-                      </div>
-                    </div>
-
-                    {!event.location && !event.is_online ? (
-                      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-                        <div style={{ ...dateBadgeLarge, background: "#f5f5f5", color: "#999" }}><AlertTriangle size={24} /></div>
-                        <div>
-                          <div style={{ fontSize: "1.05rem", fontWeight: 800, color: "#facc15", marginBottom: 4 }}>Location Missing</div>
-                          <div style={{ fontSize: "0.9rem", color: "#666", lineHeight: 1.5 }}>Please enter the location of the event before it starts.</div>
+                        <div style={{ display: "flex", alignItems: "baseline" }}>
+                          <span style={{ fontSize: "2.4rem", fontWeight: 800, letterSpacing: "-0.04em" }}>{guests.filter(g => g.status === 'confirmed').length}</span>
+                          <span style={{ fontSize: "1.2rem", fontWeight: 700, color: "#ccc" }}>/{Math.max(1, guests.length)}</span>
                         </div>
+                        <div style={{ color: "var(--manage-muted)", fontSize: "0.95rem", fontWeight: 500 }}>Invitation{guests.length !== 1 ? 's' : ''} Accepted</div>
                       </div>
-                    ) : (
-                      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-                        <div style={{ ...dateBadgeLarge, background: "rgba(0, 102, 255, 0.05)", color: "#0066FF" }}><MapPin size={24} /></div>
-                        <div>
-                          <div style={{ fontSize: "1.02rem", fontWeight: 800, marginBottom: 4 }}>{event.is_online ? "Virtual Event" : "Venue Address"}</div>
-                          <div style={{ fontSize: "0.9rem", color: "#666", lineHeight: 1.5 }}>{event.location || "Registered guests can see it."}</div>
-                        </div>
-                      </div>
-                    )}
-
-                    <div style={{ marginTop: 40, display: "flex", gap: 12 }}>
-                      <button onClick={() => { setEditForm(buildEditForm(event)); setEditOpen(true); }} style={ghostBtn}>Edit Event</button>
-                      <button style={ghostBtn}>Change Photo</button>
-                    </div>
-                  </Card>
-                </div>
-              </div>
-
-              {/* Invites Section */}
-              <div style={{ marginTop: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                  <h3 style={{ fontSize: "1.45rem", fontWeight: 800, margin: 0 }}>Invites</h3>
-                  <button onClick={() => setInviteOpen(true)} style={{ ...pillBtn, background: "#f5f5f5", color: "#333", border: "none", boxShadow: "none", borderRadius: 10, padding: "8px 12px", fontSize: "0.9rem" }}>
-                    <Plus size={16} /> Invite Guests
-                  </button>
-                </div>
-                <p style={{ color: "#666", fontSize: "0.95rem", marginTop: 8, marginBottom: 24 }}>Invite subscribers, contacts and past guests via email or SMS.</p>
-                <div style={{ padding: "60px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, color: "#bbb" }}>
-                  <Users size={48} strokeWidth={1.5} />
-                  <span style={{ fontWeight: 700, fontSize: "1.05rem" }}>No Invites Sent</span>
-                  <p style={{ color: "#999", fontSize: "0.9rem", margin: 0 }}>You can invite subscribers, contacts and past guests to the event.</p>
-                </div>
-              </div>
-
-              {/* Hosts Section */}
-              <div style={{ marginTop: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 }}>
-                  <h3 style={{ fontSize: "1.45rem", fontWeight: 800, margin: 0 }}>Hosts</h3>
-                  <button style={{ ...pillBtn, background: "#f5f5f5", color: "#333", border: "none", boxShadow: "none", borderRadius: 10, padding: "8px 12px", fontSize: "0.9rem" }}>
-                    <Plus size={16} /> Add Host
-                  </button>
-                </div>
-                <div style={{ padding: "14px 18px", background: "#fff", borderRadius: 20, border: "1px solid #f1f1f1", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Users size={20} color="#666" />
-                      </div>
-                      <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                           <span style={{ fontWeight: 800, fontSize: "1.05rem" }}>{user?.name || " Monica"}</span>
-                           <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#16a34a", padding: "2px 8px", borderRadius: 99, background: "rgba(34, 197, 94, 0.1)" }}>Creator</span>
-                        </div>
-                        <div style={{ fontSize: "0.9rem", color: "#666" }}>{user?.email || "monicanazi142003@gmail.com"}</div>
+                      <div style={{ marginTop: 32, fontSize: "0.85rem", color: "var(--manage-muted)", display: "flex", flexDirection: "column", gap: 4 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>1 Email Opened <Info size={12} color="#ccc" /></div>
+                        <div>0 Declined</div>
                       </div>
                    </div>
-                </div>
-                <div style={{ marginTop: 24, fontSize: "0.95rem", color: "#666", display: "flex", alignItems: "center", gap: 8 }}>
-                   <Users size={16} /> Manage check-in staff and options
-                </div>
-              </div>
 
-              {/* Visibility & Discovery */}
-              <div style={{ marginTop: 40 }}>
-                <h3 style={{ fontSize: "1.45rem", fontWeight: 800, margin: 0 }}>Visibility & Discovery</h3>
-                <p style={{ color: "#666", fontSize: "0.95rem", marginTop: 8, marginBottom: 24 }}>Control how people can find your event.</p>
-                <div style={{ padding: 24, background: "#fff", borderRadius: 20, border: "1px solid #f1f1f1", boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
-                   <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
-                      <div style={{ ...iconCircle, background: "#f5f5f5", color: "#666" }}><Users size={20} /></div>
-                      <div>
-                        <div style={{ fontSize: "0.85rem", color: "#666", fontWeight: 700, marginBottom: 4 }}>Managing Calendar</div>
-                        <div style={{ fontSize: "1.1rem", fontWeight: 800, marginBottom: 10 }}>Your Personal Calendar</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.9rem", color: "#666", marginBottom: 16 }}>
-                          <span style={{ color: "#16a34a", display: "flex", alignItems: "center", gap: 4, fontWeight: 700 }}><Users size={14} /> Public</span>
-                          <span> — This event is listed on your profile page.</span>
+                   <div style={{ padding: 24, background: "var(--manage-card)", borderRadius: 16, border: "1px solid #f1f1f1", boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--manage-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 20 }}>Recently Accepted</div>
+                      {guests.filter(g => g.status === 'confirmed').length === 0 ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--manage-hover)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                             <User size={16} color="var(--manage-muted)" />
+                          </div>
+                          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                             <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>Monica</span>
+                             <span style={{ fontSize: "0.85rem", color: "var(--manage-muted)" }}>monicanazi142003@gmail.com</span>
+                          </div>
                         </div>
-                        <div style={{ display: "flex", gap: 10 }}>
-                          <button style={tinyBtn}><Users size={14} /> Change Visibility</button>
-                          <button style={tinyBtn}><Users size={14} /> Transfer Calendar</button>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                          {guests.filter(g => g.status === 'confirmed').slice(0, 3).map((g, i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--manage-hover)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${g.user_email}`} alt="avatar" style={{width: 32, height: 32, borderRadius: "50%"}} />
+                              </div>
+                              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                                <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>{g.user_name || "Guest"}</span>
+                                <span style={{ fontSize: "0.85rem", color: "var(--manage-muted)" }}>{g.user_email}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
+                      )}
                    </div>
-                </div>
-                <div style={{ marginTop: 28, display: "flex", gap: 12, alignItems: "flex-start", color: "#999", fontSize: "0.95rem" }}>
-                   <Star size={18} />
-                   <p style={{ margin: 0, lineHeight: 1.5 }}>You can submit the event to a relevant Luma discovery page or other community calendars for a chance to be featured, so it can be discovered more easily.</p>
-                </div>
-              </div>
+                 </div>
+               </div>
+
             </div>
           )}
 
@@ -625,7 +550,7 @@ export default function ManageEventPage() {
                   </div>
                   <div onClick={() => setIsGuestListOpen(true)} style={quickActionCardSmall}>
                     <div style={{ ...iconCircleSmall, background: "rgba(245, 158, 11, 0.08)", color: "#f59e0b" }}><Users size={16} /></div>
-                    <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>Guest List <span style={{ fontWeight: 500, fontSize: "0.8rem", color: "#999" }}>Shown to guests</span></span>
+                    <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>Guest List <span style={{ fontWeight: 500, fontSize: "0.8rem", color: "var(--manage-muted)" }}>Shown to guests</span></span>
                   </div>
                 </div>
               </div>
@@ -646,7 +571,7 @@ export default function ManageEventPage() {
                     <Users size={64} strokeWidth={1} />
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontWeight: 700, fontSize: "1.2rem", color: "#bbb", marginBottom: 4 }}>No Guests Yet</div>
-                      <div style={{ color: "#999" }}>Share the event or invite people to get started!</div>
+                      <div style={{ color: "var(--manage-muted)" }}>Share the event or invite people to get started!</div>
                     </div>
                   </div>
                 ) : (
@@ -655,15 +580,15 @@ export default function ManageEventPage() {
                       {guests.map((g, i) => (
                         <li key={i} style={{ padding: "16px 24px", borderBottom: i === guests.length - 1 ? "none" : "1px solid #f5f5f5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <User size={18} color="#999" />
+                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--manage-hover)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <User size={18} color="var(--manage-muted)" />
                             </div>
                             <div>
                                <div style={{ fontWeight: 700, fontSize: "1.02rem" }}>{g.user_name || g.user_email || "Guest"}</div>
-                               <div style={{ fontSize: "0.85rem", color: "#666" }}>{g.user_email}</div>
+                               <div style={{ fontSize: "0.85rem", color: "var(--manage-muted)" }}>{g.user_email}</div>
                             </div>
                           </div>
-                          <span style={{ fontSize: "0.72rem", padding: "4px 10px", borderRadius: 99, background: g.status === 'confirmed' ? "rgba(34, 197, 94, 0.1)" : "#f5f5f5", color: g.status === 'confirmed' ? "#16a34a" : "#666", fontWeight: 800 }}>{g.status}</span>
+                          <span style={{ fontSize: "0.72rem", padding: "4px 10px", borderRadius: 99, background: g.status === 'confirmed' ? "rgba(34, 197, 94, 0.1)" : "var(--manage-hover)", color: g.status === 'confirmed' ? "#16a34a" : "var(--manage-muted)", fontWeight: 800 }}>{g.status}</span>
                         </li>
                       ))}
                     </ul>
@@ -680,21 +605,21 @@ export default function ManageEventPage() {
                   <div style={{ ...iconCircleSmall, background: "rgba(34, 197, 94, 0.08)", color: "#16a34a" }}><Layout size={16} /></div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>Registration</span>
-                    <span style={{ fontSize: "0.75rem", color: "#666" }}>Open</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--manage-muted)" }}>Open</span>
                   </div>
                 </div>
                 <div style={quickActionCardSmall}>
                   <div style={{ ...iconCircleSmall, background: "rgba(245, 158, 11, 0.08)", color: "#f59e0b" }}><Monitor size={16} /></div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>Event Capacity</span>
-                    <span style={{ fontSize: "0.75rem", color: "#666" }}>{event.max_seats || "Unlimited"}</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--manage-muted)" }}>{event.max_seats || "Unlimited"}</span>
                   </div>
                 </div>
                 <div style={quickActionCardSmall}>
                   <div style={{ ...iconCircleSmall, background: "rgba(147, 51, 234, 0.08)", color: "#9333ea" }}><Users size={16} /></div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>Group Registration</span>
-                    <span style={{ fontSize: "0.75rem", color: "#666" }}>Off</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--manage-muted)" }}>Off</span>
                   </div>
                 </div>
               </div>
@@ -702,24 +627,24 @@ export default function ManageEventPage() {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                   <h3 style={{ fontSize: "1.45rem", fontWeight: 800, margin: 0 }}>Tickets</h3>
-                  <button style={{ ...pillBtn, background: "#f5f5f5", color: "#333", border: "none", boxShadow: "none", borderRadius: 10, padding: "8px 12px", fontSize: "0.9rem" }}>
+                  <button style={{ ...pillBtn, background: "var(--manage-hover)", color: "var(--manage-fg)", border: "none", boxShadow: "none", borderRadius: 10, padding: "8px 12px", fontSize: "0.9rem" }}>
                     <Plus size={16} /> New Ticket Type
                   </button>
                 </div>
-                <div style={{ marginBottom: 20, padding: 20, background: "#fff", borderRadius: 20, border: "1px solid #f1f1f1", display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 16, alignItems: "center" }}>
-                   <div style={{ width: 50, height: 50, borderRadius: "50%", background: "linear-gradient(135deg, #000, #333)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+                <div style={{ marginBottom: 20, padding: 20, background: "var(--manage-card)", borderRadius: 20, border: "1px solid #f1f1f1", display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 16, alignItems: "center" }}>
+                   <div style={{ width: 50, height: 50, borderRadius: "50%", background: "linear-gradient(135deg, #000, #333)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--manage-card)" }}>
                       <Zap size={24} />
                    </div>
                    <div>
-                      <div style={{ fontWeight: 800, fontSize: "1.02rem" }}>Start Selling. <span style={{ fontWeight: 500, color: "#666" }}>Connect Stripe to accept payments and receive payouts.</span></div>
+                      <div style={{ fontWeight: 800, fontSize: "1.02rem" }}>Start Selling. <span style={{ fontWeight: 500, color: "var(--manage-muted)" }}>Connect Stripe to accept payments and receive payouts.</span></div>
                    </div>
                    <button style={{ ...actionPrimary, padding: "10px 18px", borderRadius: 12 }}>Get Started</button>
                 </div>
-                <div style={{ padding: "16px 20px", background: "#fff", borderRadius: 16, border: "1px solid #f1f1f1", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ padding: "16px 20px", background: "var(--manage-card)", borderRadius: 16, border: "1px solid #f1f1f1", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                    <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
-                      Standard <span style={{ color: "#999", fontWeight: 500 }}>Free</span>
+                      Standard <span style={{ color: "var(--manage-muted)", fontWeight: 500 }}>Free</span>
                    </div>
-                   <div style={{ color: "#999", display: "flex", alignItems: "center", gap: 6, fontSize: "0.9rem" }}>
+                   <div style={{ color: "var(--manage-muted)", display: "flex", alignItems: "center", gap: 6, fontSize: "0.9rem" }}>
                       <Users size={16} /> 0
                    </div>
                 </div>
@@ -727,8 +652,8 @@ export default function ManageEventPage() {
 
               <div>
                 <h3 style={{ fontSize: "1.45rem", fontWeight: 800, margin: "0 0 8px" }}>Registration Email</h3>
-                <p style={{ color: "#666", fontSize: "0.95rem", marginBottom: 20 }}>Tailor the confirmation email sent to guests after they register.</p>
-                <button style={{ ...actionPrimary, background: "#000", color: "#fff" }}><Mail size={16} /> Customize Email</button>
+                <p style={{ color: "var(--manage-muted)", fontSize: "0.95rem", marginBottom: 20 }}>Tailor the confirmation email sent to guests after they register.</p>
+                <button style={{ ...actionPrimary, background: "#000", color: "var(--manage-card)" }}><Mail size={16} /> Customize Email</button>
               </div>
 
               <div>
@@ -741,7 +666,7 @@ export default function ManageEventPage() {
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                          <div style={questionBox}><User size={14} /> Name <span style={{ marginLeft: "auto", color: "#ccc" }}>Full Name</span></div>
                          <div style={questionBox}><Mail size={14} /> Email <span style={{ marginLeft: "auto", color: "#16a34a" }}>Required</span></div>
-                         <div style={questionBox}><Phone size={14} /> Phone <span style={{ marginLeft: "auto", color: "#999" }}>Off</span></div>
+                         <div style={questionBox}><Phone size={14} /> Phone <span style={{ marginLeft: "auto", color: "var(--manage-muted)" }}>Off</span></div>
                       </div>
                    </div>
                    <div>
@@ -749,8 +674,8 @@ export default function ManageEventPage() {
                          <Wallet size={18} /> Web3 Identity
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                         <div style={questionBox}>ETH Address <span style={{ marginLeft: "auto", color: "#999" }}>Off</span></div>
-                         <div style={questionBox}>SOL Address <span style={{ marginLeft: "auto", color: "#999" }}>Off</span></div>
+                         <div style={questionBox}>ETH Address <span style={{ marginLeft: "auto", color: "var(--manage-muted)" }}>Off</span></div>
+                         <div style={questionBox}>SOL Address <span style={{ marginLeft: "auto", color: "var(--manage-muted)" }}>Off</span></div>
                       </div>
                    </div>
                 </div>
@@ -760,24 +685,24 @@ export default function ManageEventPage() {
 
           {activeTab === "blasts" && (
             <div style={{ display: "grid", gap: 32 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", background: "#fff", borderRadius: 20, border: "1px solid #f1f1f1" }}>
-                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#f5f5f5", overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", background: "var(--manage-card)", borderRadius: 20, border: "1px solid #f1f1f1" }}>
+                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--manage-hover)", overflow: "hidden" }}>
                    {user?.profile_image ? <img src={user.profile_image} alt="" style={{ width: "100%", height: "100%" }} /> : <User size={20} style={{ transform: "translate(6px, 6px)" }} />}
                  </div>
                  <span style={{ color: "#bbb", fontWeight: 600 }}>Send a blast to your guests...</span>
               </div>
-              <div style={{ padding: "48px 32px", borderRadius: 24, background: "#fff", border: "1px dashed #ddd", display: "grid", gridTemplateColumns: "1fr auto", gap: 40, alignItems: "center" }}>
+              <div style={{ padding: "48px 32px", borderRadius: 24, background: "var(--manage-card)", border: "1px dashed #ddd", display: "grid", gridTemplateColumns: "1fr auto", gap: 40, alignItems: "center" }}>
                  <div>
                     <h3 style={{ fontSize: "1.2rem", fontWeight: 800, margin: "0 0 10px" }}>Send Blasts</h3>
-                    <p style={{ color: "#666", fontSize: "1rem", lineHeight: 1.5, maxWidth: 360, margin: 0 }}>Share updates with your guests via email, SMS, and push notifications.</p>
+                    <p style={{ color: "var(--manage-muted)", fontSize: "1rem", lineHeight: 1.5, maxWidth: 360, margin: 0 }}>Share updates with your guests via email, SMS, and push notifications.</p>
                  </div>
                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", width: 140, height: 140 }}>
                     <div style={{ position: "absolute", width: 140, height: 140, borderRadius: "50%", border: "1px dashed #eee" }} />
                     <div style={{ position: "absolute", width: 100, height: 100, borderRadius: "50%", border: "1px dashed #eee" }} />
-                    <div style={{ ...blastIcon, background: "#fff", color: "#0066FF", top: 10, right: 10 }}><Mail size={20} /></div>
-                    <div style={{ ...blastIcon, background: "#fff", color: "#16a34a", top: 10, left: 10 }}><Smartphone size={20} /></div>
-                    <div style={{ ...blastIcon, background: "#fff", color: "#9333ea", bottom: 20, right: 20 }}><Zap size={20} /></div>
-                    <div style={{ padding: 12, borderRadius: "50%", background: "#f9f9f9", color: "#666" }}><Megaphone size={28} /></div>
+                    <div style={{ ...blastIcon, background: "var(--manage-card)", color: "#0066FF", top: 10, right: 10 }}><Mail size={20} /></div>
+                    <div style={{ ...blastIcon, background: "var(--manage-card)", color: "#16a34a", top: 10, left: 10 }}><Smartphone size={20} /></div>
+                    <div style={{ ...blastIcon, background: "var(--manage-card)", color: "#9333ea", bottom: 20, right: 20 }}><Zap size={20} /></div>
+                    <div style={{ padding: 12, borderRadius: "50%", background: "#f9f9f9", color: "var(--manage-muted)" }}><Megaphone size={28} /></div>
                  </div>
               </div>
               <div>
@@ -787,7 +712,7 @@ export default function ManageEventPage() {
                       <div style={{ ...iconCircleSmall, background: "#f9f9f9", color: "#bbb" }}><Calendar size={16} /></div>
                       <div style={{ flex: 1 }}>
                          <div style={{ fontWeight: 700, fontSize: "1.02rem" }}>Event Reminders</div>
-                         <div style={{ fontSize: "0.85rem", color: "#999" }}>Reminders are sent automatically via email, SMS, and push notification.</div>
+                         <div style={{ fontSize: "0.85rem", color: "var(--manage-muted)" }}>Reminders are sent automatically via email, SMS, and push notification.</div>
                       </div>
                       <button style={tinyBtn}>Manage</button>
                    </div>
@@ -795,7 +720,7 @@ export default function ManageEventPage() {
                       <div style={{ ...iconCircleSmall, background: "#f9f9f9", color: "#bbb" }}><Star size={16} /></div>
                       <div style={{ flex: 1 }}>
                          <div style={{ fontWeight: 700, fontSize: "1.02rem" }}>Post-Event Feedback</div>
-                         <div style={{ fontSize: "0.85rem", color: "#999" }}>Schedule a feedback email to go out after the event.</div>
+                         <div style={{ fontSize: "0.85rem", color: "var(--manage-muted)" }}>Schedule a feedback email to go out after the event.</div>
                       </div>
                       <button style={tinyBtn}>Schedule</button>
                    </div>
@@ -811,8 +736,8 @@ export default function ManageEventPage() {
                   <h3 style={{ fontSize: "1.45rem", fontWeight: 800, margin: 0 }}>Page Views</h3>
                   <button style={tinyBtn}><Clock3 size={16} /> Past 7 Days <ChevronRight size={14} style={{ transform: "rotate(90deg)" }} /></button>
                 </div>
-                <p style={{ color: "#666", fontSize: "0.95rem", marginBottom: 24 }}>See recent page views of the event page.</p>
-                <div style={{ padding: 40, background: "#fff", borderRadius: 24, border: "1px solid #f1f1f1", position: "relative", minHeight: 300, display: "flex", alignItems: "flex-end", gap: 12 }}>
+                <p style={{ color: "var(--manage-muted)", fontSize: "0.95rem", marginBottom: 24 }}>See recent page views of the event page.</p>
+                <div style={{ padding: 40, background: "var(--manage-card)", borderRadius: 24, border: "1px solid #f1f1f1", position: "relative", minHeight: 300, display: "flex", alignItems: "flex-end", gap: 12 }}>
                    {[0.2, 0.1, 0.4, 0.3, 0.5, 0.8, 0.4, 0.1, 0.9].map((h, i) => (
                      <div key={i} style={{ flex: 1, height: `${h * 200}px`, background: i === 8 ? "#ec4899" : "#eee", borderRadius: 4 }} />
                    ))}
@@ -827,9 +752,9 @@ export default function ManageEventPage() {
                 <div>
                    <h4 style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: 20 }}>Page Views</h4>
                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-                      <div><div style={{ fontSize: "0.85rem", color: "#666", fontWeight: 700 }}>24 hours</div><div style={{ fontSize: "1.5rem", fontWeight: 800 }}>2</div></div>
-                      <div><div style={{ fontSize: "0.85rem", color: "#666", fontWeight: 700 }}>7 days</div><div style={{ fontSize: "1.5rem", fontWeight: 800 }}>2</div></div>
-                      <div><div style={{ fontSize: "0.85rem", color: "#666", fontWeight: 700 }}>30 days</div><div style={{ fontSize: "1.5rem", fontWeight: 800 }}>2</div></div>
+                      <div><div style={{ fontSize: "0.85rem", color: "var(--manage-muted)", fontWeight: 700 }}>24 hours</div><div style={{ fontSize: "1.5rem", fontWeight: 800 }}>2</div></div>
+                      <div><div style={{ fontSize: "0.85rem", color: "var(--manage-muted)", fontWeight: 700 }}>7 days</div><div style={{ fontSize: "1.5rem", fontWeight: 800 }}>2</div></div>
+                      <div><div style={{ fontSize: "0.85rem", color: "var(--manage-muted)", fontWeight: 700 }}>30 days</div><div style={{ fontSize: "1.5rem", fontWeight: 800 }}>2</div></div>
                    </div>
                    <h4 style={{ fontWeight: 800, fontSize: "1.1rem", marginTop: 40, marginBottom: 20 }}>Live Traffic</h4>
                    <div style={{ display: "grid", gap: 12 }}>
@@ -837,9 +762,9 @@ export default function ManageEventPage() {
                         <Monitor size={16} color="#bbb" />
                         <div style={{ flex: 1 }}>
                            <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>Visitor from Luma</div>
-                           <div style={{ fontSize: "0.8rem", color: "#999" }}>Tiruppur, Tamil Nadu • Embed</div>
+                           <div style={{ fontSize: "0.8rem", color: "var(--manage-muted)" }}>Tiruppur, Tamil Nadu • Embed</div>
                         </div>
-                        <span style={{ fontSize: "0.8rem", color: "#999" }}>1h</span>
+                        <span style={{ fontSize: "0.8rem", color: "var(--manage-muted)" }}>1h</span>
                       </div>
                    </div>
                 </div>
@@ -848,20 +773,20 @@ export default function ManageEventPage() {
                       <section>
                          <h4 style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: 16 }}>Sources</h4>
                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.95rem", padding: "8px 0", borderBottom: "1px solid #f5f5f5" }}>
-                            <span style={{ color: "#666" }}>Luma</span>
+                            <span style={{ color: "var(--manage-muted)" }}>Luma</span>
                             <span style={{ fontWeight: 700 }}>100%</span>
                          </div>
                       </section>
                       <section>
                          <h4 style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: 16 }}>Cities</h4>
                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.95rem", padding: "8px 0", borderBottom: "1px solid #f5f5f5" }}>
-                            <span style={{ color: "#666" }}>Tiruppur, IN</span>
+                            <span style={{ color: "var(--manage-muted)" }}>Tiruppur, IN</span>
                             <span style={{ fontWeight: 700 }}>100%</span>
                          </div>
                       </section>
                       <section>
                          <h4 style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: 16 }}>UTM Sources</h4>
-                         <p style={{ fontSize: "0.9rem", color: "#999", lineHeight: 1.5, margin: 0 }}>Set up a tracking link by adding ?utm_source=your-link-name to your URL.</p>
+                         <p style={{ fontSize: "0.9rem", color: "var(--manage-muted)", lineHeight: 1.5, margin: 0 }}>Set up a tracking link by adding ?utm_source=your-link-name to your URL.</p>
                       </section>
                    </div>
                 </div>
@@ -873,32 +798,32 @@ export default function ManageEventPage() {
             <div style={{ display: "grid", gap: 48, maxWidth: 680 }}>
               <section>
                 <h3 style={{ fontSize: "1.4rem", fontWeight: 800, margin: "0 0 12px" }}>Clone Event</h3>
-                <p style={{ color: "#666", fontSize: "1.05rem", lineHeight: 1.5, marginBottom: 28 }}>Create a new event with the same information as this one. Everything except the guest list and event blasts will be copied over.</p>
-                <button style={{ ...actionPrimary, background: "#333", borderRadius: 12, padding: "12px 20px" }}>
+                <p style={{ color: "var(--manage-muted)", fontSize: "1.05rem", lineHeight: 1.5, marginBottom: 28 }}>Create a new event with the same information as this one. Everything except the guest list and event blasts will be copied over.</p>
+                <button style={{ ...actionPrimary, background: "var(--manage-fg)", borderRadius: 12, padding: "12px 20px" }}>
                   <RotateCcw size={18} /> Clone Event
                 </button>
               </section>
               <section>
                 <h3 style={{ fontSize: "1.4rem", fontWeight: 800, margin: "0 0 12px" }}>Event Page</h3>
-                <p style={{ color: "#666", fontSize: "1.05rem", lineHeight: 1.5, marginBottom: 28 }}>When you choose a new URL, the current one will no longer work. Do not change your URL if you have already shared the event.</p>
-                <div style={{ padding: "14px 20px", background: "#f5f5f5", borderRadius: 12, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, fontSize: "0.9rem", color: "#666" }}>
+                <p style={{ color: "var(--manage-muted)", fontSize: "1.05rem", lineHeight: 1.5, marginBottom: 28 }}>When you choose a new URL, the current one will no longer work. Do not change your URL if you have already shared the event.</p>
+                <div style={{ padding: "14px 20px", background: "var(--manage-hover)", borderRadius: 12, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, fontSize: "0.9rem", color: "var(--manage-muted)" }}>
                    <span>Upgrade to Luma Plus to set a custom URL for this event.</span>
                    <span style={{ fontWeight: 700, cursor: "pointer" }}>Learn More</span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                   <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#999" }}>Public URL</div>
+                   <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--manage-muted)" }}>Public URL</div>
                    <div style={{ display: "flex", gap: 12 }}>
                       <div style={{ flex: 1, display: "flex", alignItems: "center", padding: "12px 16px", background: "#f9f9f9", borderRadius: 12, border: "1px solid #eee", fontSize: "1.05rem" }}>
                          <span style={{ color: "#bbb", marginRight: 8 }}>lu.ma/</span>
                          <span style={{ fontWeight: 600 }}>{event.slug}</span>
                       </div>
-                      <button style={{ ...actionPrimary, background: "#999", borderRadius: 12, cursor: "not-allowed" }}>Update</button>
+                      <button style={{ ...actionPrimary, background: "var(--manage-muted)", borderRadius: 12, cursor: "not-allowed" }}>Update</button>
                    </div>
                 </div>
               </section>
               <section>
                 <h3 style={{ fontSize: "1.4rem", fontWeight: 800, margin: "0 0 12px" }}>Embed Event</h3>
-                <p style={{ color: "#666", fontSize: "1.05rem", lineHeight: 1.5, marginBottom: 28 }}>Have your own site? Embed the event to let visitors know about it.</p>
+                <p style={{ color: "var(--manage-muted)", fontSize: "1.05rem", lineHeight: 1.5, marginBottom: 28 }}>Have your own site? Embed the event to let visitors know about it.</p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
                    <div style={embedCardActive}>
                       <div style={{ ...iconCircleSmall, background: "rgba(236, 72, 153, 0.1)", color: "#ec4899" }}><Layout size={16} /></div>
@@ -910,9 +835,9 @@ export default function ManageEventPage() {
                       <span style={{ fontWeight: 700 }}>Embed Event Page</span>
                    </div>
                 </div>
-                <div style={{ fontSize: "0.95rem", color: "#666", marginBottom: 16 }}>Paste the following HTML code snippet to your page:</div>
+                <div style={{ fontSize: "0.95rem", color: "var(--manage-muted)", marginBottom: 16 }}>Paste the following HTML code snippet to your page:</div>
                 <div style={{ position: "relative", padding: 24, background: "#fdfdfd", border: "1px solid #eee", borderRadius: 12, overflow: "hidden", marginBottom: 32 }}>
-                   <div onClick={() => copyText(`<script src="${shareUrl}"></script>`)} style={{ position: "absolute", top: 12, right: 12, padding: "6px 12px", background: "#f5f5f5", borderRadius: 8, fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                   <div onClick={() => copyText(`<script src="${shareUrl}"></script>`)} style={{ position: "absolute", top: 12, right: 12, padding: "6px 12px", background: "var(--manage-hover)", borderRadius: 8, fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
                       <Copy size={14} /> Copy
                    </div>
                    <pre style={{ margin: 0, fontSize: "0.85rem", color: "#9333ea", lineHeight: 1.6 }}>
@@ -928,19 +853,19 @@ export default function ManageEventPage() {
 <script id="luma-checkout" src="https://embed.lu.ma/checkout-button.js"></script>`}
                    </pre>
                 </div>
-                <div style={{ fontSize: "0.95rem", color: "#666", marginBottom: 16 }}>This gives you the following button. Click it to see it in action!</div>
-                <div style={{ padding: "40px", background: "#fff", border: "1px solid #eee", borderRadius: 20, display: "flex", justifyContent: "center", marginBottom: 32 }}>
+                <div style={{ fontSize: "0.95rem", color: "var(--manage-muted)", marginBottom: 16 }}>This gives you the following button. Click it to see it in action!</div>
+                <div style={{ padding: "40px", background: "var(--manage-card)", border: "1px solid #eee", borderRadius: 20, display: "flex", justifyContent: "center", marginBottom: 32 }}>
                    <button style={{ padding: "14px 28px", background: "#000", color: "white", borderRadius: 99, fontWeight: 900, border: "none" }}>Register for Event</button>
                 </div>
-                <p style={{ fontSize: "0.9rem", color: "#666", lineHeight: 1.5 }}>
-                   If you want to use your own styling for the button, simply remove the <code style={{ color: "#333", fontWeight: 600 }}>luma-checkout--button</code> class from the snippet above.
+                <p style={{ fontSize: "0.9rem", color: "var(--manage-muted)", lineHeight: 1.5 }}>
+                   If you want to use your own styling for the button, simply remove the <code style={{ color: "var(--manage-fg)", fontWeight: 600 }}>luma-checkout--button</code> class from the snippet above.
                    <br /><br />
                    For advanced usage, check out our <span style={{ color: "#ec4899", fontWeight: 700 }}>example code and documentation.</span>
                 </p>
               </section>
               <section style={{ borderTop: "1px solid #eee", paddingTop: 48 }}>
                 <h3 style={{ fontSize: "1.4rem", fontWeight: 800, margin: "0 0 12px" }}>Cancel Event</h3>
-                <p style={{ color: "#666", fontSize: "1.05rem", lineHeight: 1.5, marginBottom: 28 }}>Cancel and permanently delete this event. This operation cannot be undone. If there are any registered guests, we will notify them that the event has been canceled.</p>
+                <p style={{ color: "var(--manage-muted)", fontSize: "1.05rem", lineHeight: 1.5, marginBottom: 28 }}>Cancel and permanently delete this event. This operation cannot be undone. If there are any registered guests, we will notify them that the event has been canceled.</p>
                 <button style={{ ...actionPrimary, background: "#ef4444", borderRadius: 12, opacity: 0.9 }}>
                   <Trash2 size={18} /> Cancel Event
                 </button>
@@ -952,20 +877,20 @@ export default function ManageEventPage() {
 
       {inviteOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "grid", placeItems: "center", zIndex: 1000 }}>
-          <div style={{ width: "min(92vw, 840px)", height: "min(90vh, 600px)", background: "#fff", borderRadius: 24, boxShadow: "0 24px 60px rgba(0,0,0,0.15)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <div style={{ width: "min(92vw, 840px)", height: "min(90vh, 600px)", background: "var(--manage-card)", borderRadius: 24, boxShadow: "0 24px 60px rgba(0,0,0,0.15)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
              <div style={{ padding: "16px 24px", borderBottom: "1px solid #f0f0f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontWeight: 800, fontSize: "1.1rem" }}>Invite Guests</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                   <div style={{ padding: "4px 12px", borderRadius: 20, border: "1px solid #eee", fontSize: "0.8rem", fontWeight: 700, color: "#999", display: "flex", alignItems: "center", gap: 6 }}>
+                   <div style={{ padding: "4px 12px", borderRadius: 20, border: "1px solid #eee", fontSize: "0.8rem", fontWeight: 700, color: "var(--manage-muted)", display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 8, height: 8, borderRadius: "50%", border: "2px solid #ddd" }} /> 15 LEFT
                    </div>
-                   <button onClick={() => setInviteOpen(false)} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#666" }}><X size={20} /></button>
+                   <button onClick={() => setInviteOpen(false)} style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--manage-muted)" }}><X size={20} /></button>
                 </div>
              </div>
              <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
                 <div style={{ width: 260, borderRight: "1px solid #f0f0f0", background: "#fdfdfd", padding: "20px 12px" }}>
                    <div style={{ display: "grid", gap: 4 }}>
-                      <div style={{ ...inviteSidebarItem, background: "#f5f5f5", color: "#000" }}><Sparkles size={16} /> Suggestions</div>
+                      <div style={{ ...inviteSidebarItem, background: "var(--manage-hover)", color: "#000" }}><Sparkles size={16} /> Suggestions</div>
                       <div style={inviteSidebarItem}><AtSign size={16} /> Enter Emails</div>
                    </div>
                    <div style={{ marginTop: 32, padding: "0 12px", fontSize: "0.75rem", fontWeight: 700, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.05em" }}>Calendar Contacts</div>
@@ -980,7 +905,7 @@ export default function ManageEventPage() {
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 60, textAlign: "center" }}>
                    <div style={{ position: "relative", width: 200, height: 160, marginBottom: 40 }}>
                       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                         <div style={{ width: 80, height: 80, background: "#fff", border: "1px solid #eee", borderRadius: 20, boxShadow: "0 12px 24px rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ddd" }}>
+                         <div style={{ width: 80, height: 80, background: "var(--manage-card)", border: "1px solid #eee", borderRadius: 20, boxShadow: "0 12px 24px rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ddd" }}>
                             <Sparkles size={40} />
                          </div>
                       </div>
@@ -989,8 +914,8 @@ export default function ManageEventPage() {
                       <div style={{ ...inviteCircle, background: "#f3e8ff", top: 20, right: 10 }}><Users size={16} color="#9333ea" /></div>
                    </div>
                    <h3 style={{ fontSize: "1.5rem", fontWeight: 800, margin: "0 0 12px" }}>Start Inviting Guests</h3>
-                   <p style={{ color: "#999", fontSize: "1rem", lineHeight: 1.5, maxWidth: 320, margin: "0 0 32px" }}>After you host an event, you'll find past guests here.</p>
-                   <button style={{ ...actionPrimary, background: "#333", padding: "14px 40px", borderRadius: 12, marginBottom: 16 }}><Mail size={18} /> Enter Emails</button>
+                   <p style={{ color: "var(--manage-muted)", fontSize: "1rem", lineHeight: 1.5, maxWidth: 320, margin: "0 0 32px" }}>After you host an event, you'll find past guests here.</p>
+                   <button style={{ ...actionPrimary, background: "var(--manage-fg)", padding: "14px 40px", borderRadius: 12, marginBottom: 16 }}><Mail size={18} /> Enter Emails</button>
                    <div style={{ fontSize: "0.85rem", color: "#ccc", margin: "10px 0" }}>or</div>
                    <button style={{ ...actionPrimary, background: "#4285f4", padding: "14px 40px", borderRadius: 12 }}><Zap size={18} /> Import from Google</button>
                 </div>
@@ -1004,15 +929,15 @@ export default function ManageEventPage() {
 
       {isCheckInOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "grid", placeItems: "center", zIndex: 1100 }}>
-          <div style={{ width: 360, background: "#fff", borderRadius: 24, padding: 32, textAlign: "center", boxShadow: "0 24px 60px rgba(0,0,0,0.15)", position: "relative" }}>
+          <div style={{ width: 360, background: "var(--manage-card)", borderRadius: 24, padding: 32, textAlign: "center", boxShadow: "0 24px 60px rgba(0,0,0,0.15)", position: "relative" }}>
              <button onClick={() => setIsCheckInOpen(false)} style={{ position: "absolute", top: 16, right: 16, border: "none", background: "transparent", cursor: "pointer", color: "#bbb" }}><X size={20} /></button>
-             <div style={{ ...iconCircle, background: "#f5f5f5", color: "#333", width: 64, height: 64, margin: "0 auto 24px" }}><QrCode size={32} /></div>
+             <div style={{ ...iconCircle, background: "var(--manage-hover)", color: "var(--manage-fg)", width: 64, height: 64, margin: "0 auto 24px" }}><QrCode size={32} /></div>
              <h3 style={{ fontSize: "1.45rem", fontWeight: 800, marginBottom: 16 }}>Check In Guests</h3>
-             <p style={{ color: "#666", fontSize: "1rem", lineHeight: 1.5, marginBottom: 32 }}>You can check in guests with our web scanner, or with our iOS and Android apps.</p>
+             <p style={{ color: "var(--manage-muted)", fontSize: "1rem", lineHeight: 1.5, marginBottom: 32 }}>You can check in guests with our web scanner, or with our iOS and Android apps.</p>
              <div style={{ display: "grid", gap: 12 }}>
-                <button onClick={() => router.push(`/check-in/${event.slug}`)} style={{ ...actionPrimary, background: "#333", width: "100%", justifyContent: "center", borderRadius: 12 }}>Open Web Scanner</button>
-                <button style={{ ...actionPrimary, background: "#f5f5f5", color: "#333", width: "100%", justifyContent: "center", borderRadius: 12 }}><Apple size={18} /> Download for iOS</button>
-                <button style={{ ...actionPrimary, background: "#f5f5f5", color: "#333", width: "100%", justifyContent: "center", borderRadius: 12 }}><Play size={18} /> Download for Android</button>
+                <button onClick={() => router.push(`/check-in/${event.slug}`)} style={{ ...actionPrimary, background: "var(--manage-fg)", width: "100%", justifyContent: "center", borderRadius: 12 }}>Open Web Scanner</button>
+                <button style={{ ...actionPrimary, background: "var(--manage-hover)", color: "var(--manage-fg)", width: "100%", justifyContent: "center", borderRadius: 12 }}><Apple size={18} /> Download for iOS</button>
+                <button style={{ ...actionPrimary, background: "var(--manage-hover)", color: "var(--manage-fg)", width: "100%", justifyContent: "center", borderRadius: 12 }}><Play size={18} /> Download for Android</button>
              </div>
           </div>
         </div>
@@ -1020,18 +945,18 @@ export default function ManageEventPage() {
 
       {isGuestListOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "grid", placeItems: "center", zIndex: 1100 }}>
-          <div style={{ width: 360, background: "#fff", borderRadius: 24, padding: 32, textAlign: "center", boxShadow: "0 24px 60px rgba(0,0,0,0.15)", position: "relative" }}>
+          <div style={{ width: 360, background: "var(--manage-card)", borderRadius: 24, padding: 32, textAlign: "center", boxShadow: "0 24px 60px rgba(0,0,0,0.15)", position: "relative" }}>
              <button onClick={() => setIsGuestListOpen(false)} style={{ position: "absolute", top: 16, right: 16, border: "none", background: "transparent", cursor: "pointer", color: "#bbb" }}><X size={20} /></button>
-             <div style={{ ...iconCircle, background: "#f5f5f5", color: "#333", width: 64, height: 64, margin: "0 auto 24px" }}><Users size={32} /></div>
+             <div style={{ ...iconCircle, background: "var(--manage-hover)", color: "var(--manage-fg)", width: 64, height: 64, margin: "0 auto 24px" }}><Users size={32} /></div>
              <h3 style={{ fontSize: "1.45rem", fontWeight: 800, marginBottom: 16 }}>Public Guest List</h3>
-             <p style={{ color: "#666", fontSize: "1rem", lineHeight: 1.5, marginBottom: 32 }}>Show guest count and a few guests on the event page, and let registered guests see the full guest list.</p>
+             <p style={{ color: "var(--manage-muted)", fontSize: "1rem", lineHeight: 1.5, marginBottom: 32 }}>Show guest count and a few guests on the event page, and let registered guests see the full guest list.</p>
              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", background: "#f9f9f9", borderRadius: 16, marginBottom: 32 }}>
                 <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>Show Public Guest List</span>
-                <div style={{ width: 44, height: 24, borderRadius: 12, background: "#333", padding: 2, display: "flex", justifyContent: "flex-end", cursor: "pointer" }}>
-                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff" }} />
+                <div style={{ width: 44, height: 24, borderRadius: 12, background: "var(--manage-fg)", padding: 2, display: "flex", justifyContent: "flex-end", cursor: "pointer" }}>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--manage-card)" }} />
                 </div>
              </div>
-             <button onClick={() => setIsGuestListOpen(false)} style={{ ...actionPrimary, background: "#333", width: "100%", justifyContent: "center", borderRadius: 12 }}>Confirm</button>
+             <button onClick={() => setIsGuestListOpen(false)} style={{ ...actionPrimary, background: "var(--manage-fg)", width: "100%", justifyContent: "center", borderRadius: 12 }}>Confirm</button>
           </div>
         </div>
       )}
@@ -1080,14 +1005,20 @@ export default function ManageEventPage() {
 }
 
 function PageShell({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    document.body.classList.add("hide-nav");
-    return () => document.body.classList.remove("hide-nav");
-  }, []);
-
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   return (
-    <div style={{ minHeight: "100vh", background: "#fdfdfd", color: "#000", fontFamily: "inherit" }}>
-      <Navbar />
+    <div style={{
+      '--manage-bg': isDark ? '#0f172a' : '#fdfdfd',
+      '--manage-fg': isDark ? '#f8fafc' : '#000',
+      '--manage-card': isDark ? '#1e293b' : '#fff',
+      '--manage-card-border': isDark ? '#334155' : '#f1f1f1',
+      '--manage-muted': isDark ? '#94a3b8' : '#666',
+      '--manage-hover': isDark ? '#334155' : '#f9f9f9',
+      '--manage-input': isDark ? '#0f172a' : '#fff',
+      '--manage-btn': isDark ? '#334155' : '#f5f5f5',
+      minHeight: "100vh", background: "var(--manage-bg)", color: "var(--manage-fg)", fontFamily: "inherit"
+    } as any}>
       {children}
     </div>
   );
@@ -1095,7 +1026,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
 
 function TabBar({ activeTab, onChange }: { activeTab: (typeof tabs)[number]["key"]; onChange: (key: (typeof tabs)[number]["key"]) => void; }) {
   return (
-    <div style={{ display: "flex", gap: 18, borderBottom: "1px solid #eee", marginBottom: 24 }}>
+    <div style={{ display: "flex", gap: 18, borderBottom: "1px solid var(--manage-card-border)", marginBottom: 24 }}>
       {tabs.map((tab) => {
         const active = tab.key === activeTab;
         return (
@@ -1106,11 +1037,11 @@ function TabBar({ activeTab, onChange }: { activeTab: (typeof tabs)[number]["key
               padding: "10px 2px", 
               border: "none", 
               background: "transparent", 
-              color: active ? "#000" : "#666", 
+              color: active ? "var(--manage-fg)" : "var(--manage-muted)", 
               fontWeight: active ? 700 : 500, 
               fontSize: "0.96rem",
               cursor: "pointer", 
-              borderBottom: active ? "2px solid #000" : "2px solid transparent",
+              borderBottom: active ? "2px solid var(--manage-fg)" : "2px solid transparent",
               transition: "all 0.2s"
             }}
           >
@@ -1123,37 +1054,37 @@ function TabBar({ activeTab, onChange }: { activeTab: (typeof tabs)[number]["key
 }
 
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return <div style={{ background: "#fff", borderRadius: 18, padding: 18, border: "1px solid #f1f1f1", boxShadow: "0 10px 20px rgba(16,36,42,0.04)", ...style }}>{children}</div>;
+  return <div style={{ background: "var(--manage-card)", borderRadius: 18, padding: 18, border: "1px solid var(--manage-card-border)", boxShadow: "0 10px 20px rgba(0,0,0,0.04)", ...style }}>{children}</div>;
 }
 
 function Modal({ title, subtitle, onClose, children }: { title: string; subtitle: string; onClose: () => void; children: React.ReactNode; }) {
-  return <div style={{ position: "fixed", inset: 0, background: "rgba(17,39,45,0.42)", display: "grid", placeItems: "center", padding: 18, zIndex: 200 }}><div style={{ width: "min(92vw, 560px)", background: "linear-gradient(180deg, rgba(255,255,255,0.99), rgba(245,251,251,0.97))", borderRadius: 24, border: "1px solid var(--border-color)", boxShadow: "0 26px 56px rgba(16,36,42,0.16)" }}><div style={{ padding: "18px 20px 14px", borderBottom: "1px solid rgba(14,118,120,0.08)", display: "flex", justifyContent: "space-between", gap: 16 }}><div><div style={{ fontSize: "1.15rem", fontWeight: 800 }}>{title}</div><div style={{ color: "var(--text-secondary)", marginTop: 6, fontSize: "0.92rem" }}>{subtitle}</div></div><button onClick={onClose} style={{ border: "none", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}><X size={20} /></button></div><div style={{ padding: 20 }}>{children}</div></div></div>;
+  return <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.42)", display: "grid", placeItems: "center", padding: 18, zIndex: 200 }}><div style={{ width: "min(92vw, 560px)", background: "var(--manage-card)", borderRadius: 24, border: "1px solid var(--manage-card-border)", boxShadow: "0 26px 56px rgba(0,0,0,0.16)" }}><div style={{ padding: "18px 20px 14px", borderBottom: "1px solid var(--manage-card-border)", display: "flex", justifyContent: "space-between", gap: 16 }}><div><div style={{ fontSize: "1.15rem", fontWeight: 800, color:"var(--manage-fg)" }}>{title}</div><div style={{ color: "var(--manage-muted)", marginTop: 6, fontSize: "0.92rem" }}>{subtitle}</div></div><button onClick={onClose} style={{ border: "none", background: "transparent", color: "var(--manage-muted)", cursor: "pointer" }}><X size={20} /></button></div><div style={{ padding: 20 }}>{children}</div></div></div>;
 }
 
-const metaChip: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: 999, background: "rgba(255,255,255,0.9)", border: "1px solid var(--border-color)", fontWeight: 700, fontSize: "0.82rem" };
-const pillBtn: React.CSSProperties = { padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border-color)", background: "#fff", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "0 10px 20px rgba(16,36,42,0.04)" };
-const panel: React.CSSProperties = { padding: "14px 16px", borderRadius: 18, background: "rgba(14,118,120,0.05)", border: "1px solid rgba(14,118,120,0.08)" };
-const label: React.CSSProperties = { color: "var(--text-secondary)", fontWeight: 700 };
-const inputStyle: React.CSSProperties = { width: "100%", padding: "11px 12px", borderRadius: 12, border: "1px solid var(--border-color)", background: "#fff", color: "#0f172a" };
-const actionPrimary: React.CSSProperties = { padding: "11px 14px", borderRadius: 12, border: "none", background: "#000", color: "#fff", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 };
-const actionSecondary: React.CSSProperties = { padding: "11px 14px", borderRadius: 12, border: "1px solid #eee", background: "#fff", color: "#000", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 };
+const metaChip: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: 999, background: "var(--manage-card)", border: "1px solid var(--manage-card-border)", fontWeight: 700, fontSize: "0.82rem", color: "var(--manage-fg)" };
+const pillBtn: React.CSSProperties = { padding: "10px 12px", borderRadius: 12, border: "1px solid var(--manage-card-border)", background: "var(--manage-card)", color: "var(--manage-fg)", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "0 10px 20px rgba(0,0,0,0.04)" };
+const panel: React.CSSProperties = { padding: "14px 16px", borderRadius: 18, background: "var(--manage-hover)", border: "1px solid var(--manage-card-border)" };
+const label: React.CSSProperties = { color: "var(--manage-muted)", fontWeight: 700 };
+const inputStyle: React.CSSProperties = { width: "100%", padding: "11px 12px", borderRadius: 12, border: "1px solid var(--manage-card-border)", background: "var(--manage-input)", color: "var(--manage-fg)" };
+const actionPrimary: React.CSSProperties = { padding: "11px 14px", borderRadius: 12, border: "none", background: "var(--manage-fg)", color: "var(--manage-bg)", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 };
+const actionSecondary: React.CSSProperties = { padding: "11px 14px", borderRadius: 12, border: "1px solid var(--manage-card-border)", background: "var(--manage-card)", color: "var(--manage-fg)", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 };
 
-const quickActionCard: React.CSSProperties = { display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", background: "#fff", borderRadius: 20, border: "1px solid #f1f1f1", boxShadow: "0 10px 20px rgba(16,36,42,0.04)", cursor: "pointer" };
+const quickActionCard: React.CSSProperties = { display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", background: "var(--manage-card)", color: "var(--manage-fg)", borderRadius: 20, border: "1px solid var(--manage-card-border)", boxShadow: "0 10px 20px rgba(0,0,0,0.04)", cursor: "pointer" };
 const iconCircle: React.CSSProperties = { width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" };
-const dateBadgeMini: React.CSSProperties = { width: 40, height: 40, borderRadius: 10, background: "#fdf2f2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "1px solid #fee2e2" };
-const dateBadgeLarge: React.CSSProperties = { width: 50, height: 50, borderRadius: 14, background: "#fff", border: "1px solid #eee", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.03)" };
-const ghostBtn: React.CSSProperties = { flex: 1, padding: "11px", borderRadius: 12, background: "#f5f5f5", color: "#333", border: "none", fontWeight: 700, fontSize: "0.92rem", cursor: "pointer" };
-const tinyBtn: React.CSSProperties = { padding: "7px 10px", borderRadius: 10, background: "#f5f5f5", color: "#333", border: "none", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 };
+const dateBadgeMini: React.CSSProperties = { width: 40, height: 40, borderRadius: 10, background: "var(--manage-hover)", color:"var(--manage-fg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "1px solid var(--manage-card-border)" };
+const dateBadgeLarge: React.CSSProperties = { width: 50, height: 50, borderRadius: 14, background: "var(--manage-card)", color: "var(--manage-fg)", border: "1px solid var(--manage-card-border)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.03)" };
+const ghostBtn: React.CSSProperties = { flex: 1, padding: "11px", borderRadius: 12, background: "var(--manage-btn)", color: "var(--manage-fg)", border: "none", fontWeight: 700, fontSize: "0.92rem", cursor: "pointer" };
+const tinyBtn: React.CSSProperties = { padding: "7px 10px", borderRadius: 10, background: "var(--manage-btn)", color: "var(--manage-fg)", border: "none", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 };
 
 const iconCircleSmall: React.CSSProperties = { width: 30, height: 30, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" };
-const quickActionCardSmall: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "#fff", borderRadius: 14, border: "1px solid #f1f1f1", cursor: "pointer" };
-const questionBox: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#f9f9f9", borderRadius: 12, fontSize: "0.86rem", color: "#666", border: "1px solid #f0f0f0" };
+const quickActionCardSmall: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "var(--manage-card)", color: "var(--manage-fg)", borderRadius: 14, border: "1px solid var(--manage-card-border)", cursor: "pointer" };
+const questionBox: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "var(--manage-hover)", borderRadius: 12, fontSize: "0.86rem", color: "var(--manage-muted)", border: "1px solid var(--manage-card-border)" };
 const blastIcon: React.CSSProperties = { position: "absolute", width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.05)" };
 const systemMsgRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, padding: "10px 0" };
 const trafficRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, padding: "10px 0" };
 
-const embedCard: React.CSSProperties = { padding: 14, background: "#fff", border: "1px solid #f1f1f1", borderRadius: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" };
-const embedCardActive: React.CSSProperties = { ...embedCard, border: "1px solid #ec4899", background: "rgba(236, 72, 153, 0.02)" };
+const embedCard: React.CSSProperties = { padding: 14, background: "var(--manage-card)", color: "var(--manage-fg)", border: "1px solid var(--manage-card-border)", borderRadius: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" };
+const embedCardActive: React.CSSProperties = { ...embedCard, border: "1px solid #a855f7", background: "rgba(168, 85, 247, 0.05)" };
 
-const inviteSidebarItem: React.CSSProperties = { padding: "7px 10px", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: "0.86rem", fontWeight: 600, color: "#666", cursor: "pointer" };
-const inviteCircle: React.CSSProperties = { position: "absolute", width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "4px solid #fff", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" };
+const inviteSidebarItem: React.CSSProperties = { padding: "7px 10px", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: "0.86rem", fontWeight: 600, color: "var(--manage-muted)", cursor: "pointer" };
+const inviteCircle: React.CSSProperties = { position: "absolute", width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "4px solid var(--manage-bg)", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" };

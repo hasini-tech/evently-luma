@@ -9,17 +9,14 @@ import {
   PiMagnifyingGlass, PiBell, PiCaretDown, PiGlobe,
   PiShuffle, PiMapPin, PiFileText, PiTicket, PiShieldCheck,
   PiUsers, PiCloudArrowUp, PiCaretLeft, PiCaretRight,
-  PiCheck, PiPencilSimple,
+  PiCheck, PiPencilSimple, PiMoon, PiSun,
 } from "react-icons/pi";
 import { useAuth } from "@/context/auth-context";
 import api from "@/lib/api";
 import { DEFAULT_EVENT_COVER } from "@/lib/defaults";
-import {
-  getPersonalTimelineCacheKey, mergeUniqueTimelineItems,
-  readPersonalTimelineCacheItems, readStoredTimelineIdentity,
-  writePersonalTimelineCacheItems,
-} from "@/lib/personalTimelineCache";
+import { getPersonalTimelineCacheKey, mergeUniqueTimelineItems, readPersonalTimelineCacheItems, readStoredTimelineIdentity, writePersonalTimelineCacheItems } from "@/lib/personalTimelineCache";
 import Image from 'next/image';
+import { useTheme } from "next-themes";
 
 // ─── Theme system ─────────────────────────────────────────────────────────────
 type ThemeId = 'minimal'|'quantum'|'warp'|'emoji'|'confetti'|'pattern'|'seasonal';
@@ -448,63 +445,84 @@ function VisibilityPicker({ value, onChange, onClose, C }: { value:EventStatus; 
 }
 
 // ─── Theme thumbnail previews ─────────────────────────────────────────────────
-function ThemeThumb({ theme, selected }: { theme:typeof THEMES[0]; selected:boolean }) {
+// Per-theme accent color for selection ring
+const THEME_ACCENT: Record<ThemeId,string> = {
+  minimal:  '#6b46c1',
+  quantum:  '#a78bfa',
+  warp:     '#ff6ad5',
+  emoji:    '#fbbf24',
+  confetti: '#c084fc',
+  pattern:  '#818cf8',
+  seasonal: '#f472b6',
+};
+
+function ThemeThumb({ theme, selected, onSelect }: { theme:typeof THEMES[0]; selected:boolean; onSelect:()=>void }) {
+  const accent = THEME_ACCENT[theme.id];
   const previews: Record<ThemeId, React.ReactNode> = {
     minimal: (
-      <div style={{width:'100%',height:'100%',background:'#f3eff8',display:'flex',flexDirection:'column',justifyContent:'center',gap:4,padding:'8px'}}>
-        <div style={{background:'#e0d9ef',height:5,borderRadius:3,width:'75%'}}/>
-        <div style={{background:'#e0d9ef',height:5,borderRadius:3,width:'55%'}}/>
-        <div style={{background:'#e0d9ef',height:5,borderRadius:3,width:'65%'}}/>
+      <div style={{width:'100%',height:'100%',background:'linear-gradient(145deg,#f3eff8,#ede8f4)',display:'flex',flexDirection:'column',justifyContent:'center',gap:5,padding:'10px 12px'}}>
+        <div style={{background:'#d4cce6',height:6,borderRadius:4,width:'80%'}}/>
+        <div style={{background:'#e0d9ef',height:4,borderRadius:3,width:'60%'}}/>
+        <div style={{background:'#e0d9ef',height:4,borderRadius:3,width:'70%'}}/>
+        <div style={{background:'#6b46c1',height:14,borderRadius:6,width:'45%',marginTop:2}}/>
       </div>
     ),
     quantum: (
-      <div style={{width:'100%',height:'100%',background:'linear-gradient(135deg,#0d0b1e,#2d1b69)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <div style={{width:'60%',height:'1px',background:'linear-gradient(90deg,transparent,#a78bfa,transparent)',opacity:0.8}}/>
+      <div style={{width:'100%',height:'100%',background:'linear-gradient(135deg,#0d0b1e,#1e1050,#2d1b69)',overflow:'hidden',position:'relative',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        {[0,1,2].map(i=>(
+          <div key={i} style={{position:'absolute',width:`${60+i*20}%`,height:'1px',background:`linear-gradient(90deg,transparent,${i===0?'#a78bfa':i===1?'#818cf8':'#e879f9'},transparent)`,opacity:0.6+i*0.15,transform:`rotate(${i*15-10}deg)`}}/>
+        ))}
+        <div style={{width:10,height:10,borderRadius:'50%',background:'radial-gradient(circle,#a78bfa,transparent)',boxShadow:'0 0 12px #a78bfa',zIndex:1}}/>
       </div>
     ),
     warp: (
       <div style={{width:'100%',height:'100%',background:'#060610',overflow:'hidden',position:'relative'}}>
-        {['#ff6ad5','#94d0ff','#ffe599','#c774e8'].map((c,i)=>(
-          <div key={i} style={{position:'absolute',top:'50%',left:'50%',width:'140%',height:'1.5px',background:`linear-gradient(90deg,transparent,${c},transparent)`,transform:`rotate(${i*45}deg)`,opacity:0.7}}/>
+        {['#ff6ad5','#94d0ff','#ffe599','#c774e8','#a8edea'].map((c,i)=>(
+          <div key={i} style={{position:'absolute',top:'50%',left:'50%',width:'160%',height:'1.5px',background:`linear-gradient(90deg,transparent,${c},transparent)`,transform:`rotate(${i*36}deg)`,opacity:0.75}}/>
         ))}
       </div>
     ),
     emoji: (
-      <div style={{width:'100%',height:'100%',background:'#181528',display:'flex',alignItems:'center',justifyContent:'center',flexWrap:'wrap',gap:2,padding:4}}>
-        {'😎🎉✨🌟'.split('').map((e,i)=><span key={i} style={{fontSize:14}}>{e}</span>)}
+      <div style={{width:'100%',height:'100%',background:'linear-gradient(135deg,#181528,#241d40)',display:'flex',alignItems:'center',justifyContent:'center',flexWrap:'wrap',gap:3,padding:6}}>
+        {['🎉','✨','🎊','🌟','💫','🎈'].map((e,i)=><span key={i} style={{fontSize:15,filter:'drop-shadow(0 0 3px rgba(255,200,0,0.4))'}}>{e}</span>)}
       </div>
     ),
     confetti: (
-      <div style={{width:'100%',height:'100%',background:'linear-gradient(135deg,#1c0a38,#3b0764)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-        {'♥♥♥♥♥♥'.split('').map((e,i)=><span key={i} style={{color:'#a78bfa',fontSize:10,opacity:0.5+i*0.08}}>{e}</span>)}
+      <div style={{width:'100%',height:'100%',background:'linear-gradient(135deg,#1c0a38,#3b0764)',overflow:'hidden',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',gap:2}}>
+        {['♥','♥','♥','♥','♥','♥','♥','♥'].map((e,i)=>(
+          <span key={i} style={{color:['#a78bfa','#e879f9','#c084fc'][i%3],fontSize:11+i%3*2,opacity:0.4+i*0.07,transform:`translateY(${i%2===0?-3:3}px)`}}>{e}</span>
+        ))}
       </div>
     ),
     pattern: (
-      <div style={{width:'100%',height:'100%',background:'#2a1760',position:'relative'}}>
+      <div style={{width:'100%',height:'100%',background:'#2a1760',position:'relative',overflow:'hidden'}}>
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs><pattern id="pt" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="8" fill="none" stroke="#a78bfa" strokeWidth="0.8"/></pattern></defs>
-          <rect width="100%" height="100%" fill="url(#pt)" opacity="0.8"/>
+          <defs><pattern id="pt2" x="0" y="0" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="9" cy="9" r="7" fill="none" stroke="#a78bfa" strokeWidth="0.8"/><circle cx="9" cy="9" r="3" fill="none" stroke="#818cf8" strokeWidth="0.5"/></pattern></defs>
+          <rect width="100%" height="100%" fill="url(#pt2)"/>
         </svg>
       </div>
     ),
     seasonal: (
-      <div style={{width:'100%',height:'100%',background:'linear-gradient(135deg,#fdf2f8,#fce7f3)',display:'flex',alignItems:'center',justifyContent:'center',gap:2}}>
-        {'🌸🌺🌷'.split('').map((e,i)=><span key={i} style={{fontSize:14}}>{e}</span>)}
+      <div style={{width:'100%',height:'100%',background:'linear-gradient(135deg,#fdf2f8,#fce7f3,#fdf4ff)',display:'flex',alignItems:'center',justifyContent:'center',flexWrap:'wrap',gap:3,padding:6}}>
+        {['🌸','🌺','🌷','🌼','🌻','🌹'].map((e,i)=><span key={i} style={{fontSize:13}}>{e}</span>)}
       </div>
     ),
   };
 
   return (
-    <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,cursor:'pointer',flexShrink:0}}>
+    <div onClick={onSelect} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:7,cursor:'pointer',flexShrink:0,transition:'transform 0.15s'}} onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.transform='translateY(-2px)'} onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.transform='translateY(0)'}>
       <div style={{
-        width:72,height:52,borderRadius:12,overflow:'hidden',
-        border: selected ? '2px solid #18181b' : '2px solid transparent',
-        boxShadow: selected ? '0 0 0 1px rgba(0,0,0,0.1)' : 'none',
-        transition:'border-color 0.15s',
+        width:96,height:68,borderRadius:14,overflow:'hidden',
+        border: selected ? `2.5px solid ${accent}` : '2.5px solid transparent',
+        boxShadow: selected ? `0 0 0 3px ${accent}30, 0 8px 24px rgba(0,0,0,0.18)` : '0 2px 12px rgba(0,0,0,0.08)',
+        transition:'border-color 0.2s, box-shadow 0.2s',
       }}>
         {previews[theme.id]}
       </div>
-      <span style={{fontSize:11,color:'#8b7fa8',fontWeight: selected ? 700:500}}>{theme.label}</span>
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
+        <span style={{fontSize:12,fontWeight: selected ? 700:500,color: selected ? accent : '#8b7fa8',transition:'color 0.2s'}}>{theme.label}</span>
+        {selected && <div style={{width:16,height:2,borderRadius:2,background:accent,transition:'width 0.2s'}}/>}
+      </div>
     </div>
   );
 }
@@ -514,9 +532,11 @@ export default function CreateEventBuilderPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
+  const { theme, setTheme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const startDateRef = useRef<HTMLDivElement>(null);
   const startTimeRef = useRef<HTMLDivElement>(null);
+  const endDateRef   = useRef<HTMLDivElement>(null);
   const endTimeRef   = useRef<HTMLDivElement>(null);
   const timezoneRef  = useRef<HTMLDivElement>(null);
   const visibilityRef= useRef<HTMLDivElement>(null);
@@ -529,7 +549,9 @@ export default function CreateEventBuilderPage() {
   const [uploadedImage,setUploadedImage]=useState<string|null>(null);
   const [selectedTheme,setSelectedTheme]=useState<ThemeId>('minimal');
   const [showThemePanel,setShowThemePanel]=useState(false);
+  const [endDate,setEndDate]=useState(addDays(localIso(),1));
   const [timezone,setTimezone]=useState(POPULAR_TIMEZONES.find(z=>z.tz==='Asia/Calcutta')!);
+  const [showStripePopup,setShowStripePopup]=useState(false);
 
   type ActivePicker='startDate'|'startTime'|'endDate'|'endTime'|'timezone'|'visibility'|null;
   const [active,setActive]=useState<ActivePicker>(null);
@@ -573,15 +595,24 @@ export default function CreateEventBuilderPage() {
       const res=await api.post('/events/',payload);
       const identity=user??readStoredTimelineIdentity();
       const key=getPersonalTimelineCacheKey(identity);
-      writePersonalTimelineCacheItems(key,mergeUniqueTimelineItems([{...res.data,relationship:'hosting'}],readPersonalTimelineCacheItems(key)));
-      router.push(`/manage/${res.data.slug}`);
-    } catch(err:any) { setError(err?.response?.data?.detail||'Failed to create event'); }
-    finally { setLoading(false); }
+      
+      try {
+        writePersonalTimelineCacheItems(key,mergeUniqueTimelineItems([{...res.data,relationship:'hosting'}],readPersonalTimelineCacheItems(key)));
+      } catch(e) {
+        // Silently catch quota exceeded errors if image base64 is huge
+      }
+      
+      // Use a hard redirect to bypass Next.js RSC fetch soft-navigation which can throw TypeError: Failed to fetch
+      window.location.href = `/manage/${res.data.slug}`;
+    } catch(err:any) { setError(err?.response?.data?.detail||'Failed to create event'); setLoading(false); }
   };
 
   const selectedCalendar=ownerCalendars.find(c=>c.id===selectedCalendarId)||ownerCalendars[0];
   const toggle=(p:ActivePicker)=>setActive(prev=>prev===p?null:p);
-  const endDate=addDays(form.date,1);
+  // When start date advances past end date, push end date forward by 1 day automatically
+  useEffect(()=>{
+    if(endDate<=form.date) setEndDate(addDays(form.date,1));
+  },[form.date]);
 
   // common sub-component props
   const pickerProps={C};
@@ -676,20 +707,47 @@ export default function CreateEventBuilderPage() {
       `}</style>
 
       {/* ── Header ── */}
-      <header style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'14px 32px',maxWidth:1280,margin:'0 auto',position:'relative',zIndex:10}}>
-        <div style={{display:'flex',alignItems:'center',gap:36}}>
-          <PiSparkle size={22} color={C.muted}/>
-          <nav style={{display:'flex',gap:24}}>
-            <Link href="#" className="nav-link"><PiCalendarDots size={16}/>Events</Link>
-            <Link href="#" className="nav-link"><PiCalendar size={16}/>Calendars</Link>
-            <Link href="#" className="nav-link"><PiCompass size={16}/>Discover</Link>
+      <header style={{ display: 'flex', justifyContent: 'center', padding: '14px 32px', position: 'relative', zIndex: 10 }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 20,
+          background: isDark ? '#1e293b' : '#fff',
+          border: `1px solid ${isDark ? '#334155' : '#f1f1f1'}`,
+          borderRadius: 999,
+          padding: '8px 12px 8px 20px',
+          boxShadow: isDark ? '0 10px 40px rgba(0,0,0,0.5)' : '0 12px 40px rgba(0,0,0,0.06)',
+          transition: 'all 0.3s ease'
+        }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, color: C.text, fontSize: '1.05rem', letterSpacing: '-0.02em' }}>
+            GrowthLab <span style={{ fontWeight: 500, color: C.muted }}>Lite</span>
+          </div>
+
+          <div style={{ width: 1, height: 18, background: isDark ? '#334155' : '#eee' }} />
+
+          {/* Nav Links */}
+          <nav style={{ display: 'flex', gap: 24, padding: '0 8px' }}>
+            <Link href="#" style={{ textDecoration: 'none', color: '#6366f1', fontSize: '0.92rem', fontWeight: 700 }}>Events</Link>
+            <Link href="#" style={{ textDecoration: 'none', color: C.muted, fontSize: '0.92rem', fontWeight: 600, transition: 'color 0.2s' }}>Calendars</Link>
+            <Link href="#" style={{ textDecoration: 'none', color: C.muted, fontSize: '0.92rem', fontWeight: 600, transition: 'color 0.2s' }}>Discover</Link>
           </nav>
-        </div>
-        <div style={{display:'flex',alignItems:'center',gap:16}}>
-          <PiMagnifyingGlass size={18} color={C.muted} style={{cursor:'pointer'}}/>
-          <PiBell size={18} color={C.muted} style={{cursor:'pointer'}}/>
-          <div style={{width:28,height:28,borderRadius:'50%',background:`linear-gradient(135deg,#6b46c1,#4c1d95)`,color:'#fff',display:'grid',placeItems:'center',fontSize:12,fontWeight:700}}>
-            {user?.name?.[0]?.toUpperCase()||'Y'}
+
+          <div style={{ width: 1, height: 18, background: isDark ? '#334155' : '#eee' }} />
+
+          {/* Controls & Avatar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingLeft: 4 }}>
+            <div onClick={() => {
+              const toDark = !isDark;
+              setTheme(toDark ? 'dark' : 'light');
+              setSelectedTheme(toDark ? 'quantum' : 'minimal');
+            }} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4, borderRadius: '50%', background: isDark ? '#334155' : '#f9f9f9' }}>
+              {isDark ? <PiSun size={16} color={C.text}/> : <PiMoon size={16} color={C.text}/>}
+            </div>
+            <PiMagnifyingGlass size={18} color={C.muted} style={{ cursor: 'pointer' }}/>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg, #6366f1, #4f46e5)`, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              {user?.name?.[0]?.toUpperCase() || 'Y'}
+            </div>
           </div>
         </div>
       </header>
@@ -699,8 +757,8 @@ export default function CreateEventBuilderPage() {
 
         {/* LEFT: Image + Theme */}
         <div style={{display:'flex',flexDirection:'column',gap:14}}>
-          <div style={{aspectRatio:'1',borderRadius:20,position:'relative',overflow:'hidden',background:'#3b0764',boxShadow:`0 24px 60px rgba(0,0,0,${isDark?0.5:0.14})`}}>
-            <Image src={uploadedImage||'/growthlab/startup-team-collaboration.png'} alt="Cover" fill style={{objectFit:'cover'}}/>
+          <div style={{aspectRatio:'1',borderRadius:20,position:'relative',overflow:'hidden',background:'#3b0764',boxShadow:`0 24px 60px rgba(0,0,0,${isDark?0.5:0.14})`, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <img src={uploadedImage||'/growthlab/startup-team-collaboration.png'} alt="Cover" style={{width: '100%', height: '100%', objectFit: 'cover', display: 'block'}}/>
             <button type="button" onClick={()=>fileInputRef.current?.click()} style={{position:'absolute',bottom:14,right:14,width:34,height:34,borderRadius:'50%',background:'rgba(0,0,0,0.65)',color:'#fff',border:'none',display:'grid',placeItems:'center',cursor:'pointer',backdropFilter:'blur(6px)'}}>
               <PiCloudArrowUp size={16}/>
             </button>
@@ -779,7 +837,12 @@ export default function CreateEventBuilderPage() {
                   <div style={{width:9,height:9,borderRadius:'50%',border:`1.5px solid ${C.light}`,flexShrink:0}}/>
                   <span style={{fontSize:13,fontWeight:600,color:C.muted,width:36,flexShrink:0}}>End</span>
                   <div style={{display:'flex',gap:8,flex:1}}>
-                    <div className="date-chip" style={{cursor:'default',opacity:0.7}}>{fmtDate(endDate)}</div>
+                    <div ref={endDateRef} style={{position:'relative'}}>
+                      <div className={`date-chip${active==='endDate'?' open':''}`} onClick={e=>{e.stopPropagation();setActive(active==='endDate'?null:'endDate');}}>
+                        {fmtDate(endDate)}
+                      </div>
+                      {active==='endDate'&&<CalendarPopup value={endDate} onChange={v=>setEndDate(v)} onClose={()=>setActive(null)} C={C} anchor={endDateRef}/>}
+                    </div>
                     <div ref={endTimeRef} style={{position:'relative'}}>
                       <div className={`date-chip${active==='endTime'?' open':''}`} onClick={e=>{e.stopPropagation();setActive(active==='endTime'?null:'endTime');}} style={{minWidth:68,justifyContent:'center'}}>
                         {form.end_time}
@@ -821,7 +884,7 @@ export default function CreateEventBuilderPage() {
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             <div style={{fontSize:13,fontWeight:700,color:C.muted,paddingLeft:4}}>Event Options</div>
             <div style={{background:C.inputBg,borderRadius:16,overflow:'hidden',border:`1px solid ${C.chipBorder}`,backdropFilter:'blur(4px)'}}>
-              <div className="luma-option-row">
+              <div className="luma-option-row" onClick={() => setShowStripePopup(true)} style={{cursor: 'pointer'}}>
                 <PiTicket size={18} color={C.muted} style={{flexShrink:0}}/>
                 <span style={{flex:1,fontSize:14,fontWeight:600,color:C.text}}>Ticket Price</span>
                 <span style={{fontSize:13,color:C.muted,display:'flex',alignItems:'center',gap:5}}>Free <PiPencilSimple size={13}/></span>
@@ -854,30 +917,48 @@ export default function CreateEventBuilderPage() {
 
       {/* ── Theme Panel ── */}
       {showThemePanel&&(
-        <div onClick={e=>e.stopPropagation()} style={{position:'fixed',bottom:0,left:0,right:0,background:isDark?'rgba(15,10,30,0.95)':'rgba(255,255,255,0.97)',borderTop:`1px solid ${C.chipBorder}`,boxShadow:`0 -12px 50px rgba(0,0,0,${isDark?0.5:0.1})`,zIndex:1000,padding:'16px 0 0',backdropFilter:'blur(20px)'}}>
-          <div style={{display:'flex',gap:14,overflowX:'auto',padding:'4px 32px 14px',scrollbarWidth:'none'}}>
+        <div onClick={e=>e.stopPropagation()} style={{position:'fixed',bottom:0,left:0,right:0,background:isDark?'rgba(10,8,24,0.97)':'rgba(252,250,255,0.98)',borderTop:`1px solid ${C.chipBorder}`,boxShadow:`0 -20px 70px rgba(0,0,0,${isDark?0.65:0.14})`,zIndex:1000,backdropFilter:'blur(28px)'}}>
+          {/* Header */}
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 36px 12px'}}>
+            <div>
+              <span style={{fontSize:14,fontWeight:800,color:C.text,letterSpacing:'-0.01em'}}>Event Theme</span>
+              <span style={{fontSize:12,color:C.muted,marginLeft:10}}>Pick a vibe for your event page</span>
+            </div>
+            <button type="button" onClick={()=>setShowThemePanel(false)} style={{background:C.inputBg,border:`1px solid ${C.chipBorder}`,cursor:'pointer',color:C.muted,fontSize:14,lineHeight:1,padding:'6px 10px',borderRadius:8,fontWeight:600}}>
+              Done
+            </button>
+          </div>
+          {/* Thumbnails — wrap grid centred */}
+          <div style={{display:'flex',flexWrap:'wrap',gap:20,padding:'4px 36px 24px',justifyContent:'center'}}>
             {THEMES.map(t=>(
-              <div key={t.id} onClick={()=>setSelectedTheme(t.id)}>
-                <ThemeThumb theme={t} selected={selectedTheme===t.id}/>
-              </div>
+              <ThemeThumb key={t.id} theme={t} selected={selectedTheme===t.id} onSelect={()=>setSelectedTheme(t.id)}/>
             ))}
           </div>
-          {/* bottom toolbar */}
-          <div style={{display:'flex',justifyContent:'center',borderTop:`1px solid ${C.chipBorder}`,padding:'12px 0'}}>
-            {[
-              {label:'Colour',pre:<div style={{width:14,height:14,borderRadius:'50%',background:'#6b46c1',border:'2px solid #fff',boxShadow:'0 0 0 1.5px #6b46c1'}}/>},
-              {label:'Custom',suf:<PiCaretDown size={13}/>},
-              {label:'Style'},
-              {label:'—',suf:<PiCaretDown size={13}/>},
-              {label:'Ag Font'},
-              {label:'Ivy Presto',suf:<PiCaretDown size={13}/>},
-              {label:'Display'},
-              {label:'Auto',suf:<PiCaretDown size={13}/>},
-            ].map((item,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:5,padding:'5px 14px',fontSize:13,fontWeight:500,color:C.text,cursor:'pointer',borderRight:i<7?`1px solid ${C.chipBorder}`:'none'}}>
-                {item.pre}{item.label}{item.suf}
-              </div>
-            ))}
+        </div>
+      )}
+
+      {/* ── Stripe Popup ── */}
+      {showStripePopup && (
+        <div 
+          onClick={() => setShowStripePopup(false)}
+          style={{position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.1)'}}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{background: '#fff', borderRadius: 20, padding: 24, width: '100%', maxWidth: 360, boxShadow: '0 24px 60px rgba(0,0,0,0.1)'}}
+          >
+            <div style={{width: 48, height: 48, borderRadius: 12, background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, border: '1px solid #eee'}}>
+              <PiTicket size={24} color="#333" />
+            </div>
+            <h3 style={{fontSize: 20, fontWeight: 800, color: '#111', margin: '0 0 12px', letterSpacing: '-0.02em', fontFamily: "'Inter', sans-serif"}}>Accept Payments</h3>
+            <p style={{color: '#555', fontSize: 13.5, lineHeight: 1.5, margin: '0 0 16px', fontFamily: "'Inter', sans-serif"}}>This calendar is not yet set up to accept payments.</p>
+            <p style={{color: '#555', fontSize: 13.5, lineHeight: 1.5, margin: '0 0 24px', fontFamily: "'Inter', sans-serif"}}>We use <span style={{color: '#0d9488', fontWeight: 600}}>Stripe</span> to process payments. Connect or set up a Stripe account to start accepting payments. It usually takes less than 5 minutes.</p>
+            <button 
+              onClick={() => setShowStripePopup(false)}
+              style={{width: '100%', padding: '14px', borderRadius: 12, background: '#2c2c2c', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', border: 'none', fontFamily: "'Inter', sans-serif"}}
+            >
+              Connect Stripe
+            </button>
           </div>
         </div>
       )}
